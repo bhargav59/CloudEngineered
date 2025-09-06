@@ -1,0 +1,15 @@
+-r base.txt
+
+# Production WSGI Server
+gunicorn>=21.0.0
+
+# Production Database
+psycopg2>=2.9.7
+
+# Production Monitoring
+newrelic>=9.0.0
+prometheus-client>=0.17.0
+
+# Security
+django-csp>=3.7
+django-ratelimit>=4.1.0

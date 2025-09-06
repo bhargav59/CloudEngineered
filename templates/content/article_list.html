@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - {{ site_name }}{% endblock %}
+{% block meta_description %}{{ page_description }}{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-r from-green-600 to-teal-700 text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                {% if category %}{{ category.name }} Articles{% else %}Latest Articles{% endif %}
+            </h1>
+            <p class="text-xl text-green-100 max-w-3xl mx-auto">
+                {% if category %}
+                {{ category.description }}
+                {% else %}
+                Discover insights, tutorials, and best practices for cloud engineering and DevOps.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Filters and Search -->
+<section class="bg-white py-6 border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <form method="get" class="space-y-4">
+            <div class="flex flex-col lg:flex-row gap-4">
+                <!-- Search -->
+                <div class="flex-1">
+                    <div class="relative">
+                        <input type="text" name="search" value="{{ request.GET.search }}" 
+                               placeholder="Search articles by title, content, or author..."
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Category Filter -->
+                {% if not category %}
+                <div class="w-full lg:w-48">
+                    <select name="category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                
+                <!-- Type Filter -->
+                <div class="w-full lg:w-48">
+                    <select name="type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">All Types</option>
+                        <option value="tutorial" {% if request.GET.type == 'tutorial' %}selected{% endif %}>Tutorial</option>
+                        <option value="guide" {% if request.GET.type == 'guide' %}selected{% endif %}>Guide</option>
+                        <option value="review" {% if request.GET.type == 'review' %}selected{% endif %}>Review</option>
+                        <option value="news" {% if request.GET.type == 'news' %}selected{% endif %}>News</option>
+                        <option value="opinion" {% if request.GET.type == 'opinion' %}selected{% endif %}>Opinion</option>
+                    </select>
+                </div>
+                
+                <!-- Tag Filter -->
+                <div class="w-full lg:w-48">
+                    <select name="tag" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">All Tags</option>
+                        {% for tag in tags %}
+                        <option value="{{ tag.slug }}" {% if request.GET.tag == tag.slug %}selected{% endif %}>
+                            {{ tag.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Apply Button -->
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-filter mr-2"></i>Apply
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Articles Grid -->
+<section class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {% if articles %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Articles -->
+            <div class="lg:col-span-2">
+                <div class="space-y-8">
+                    {% for article in articles %}
+                    <article class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-200">
+                        {% if article.featured_image %}
+                        <div class="aspect-video overflow-hidden rounded-t-lg">
+                            <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" 
+                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                        </div>
+                        {% endif %}
+                        
+                        <div class="p-6">
+                            <!-- Article Meta -->
+                            <div class="flex items-center gap-4 mb-3 text-sm text-gray-500">
+                                <span class="flex items-center">
+                                    <i class="fas fa-calendar mr-1"></i>{{ article.published|date:"M d, Y" }}
+                                </span>
+                                <span class="flex items-center">
+                                    <i class="fas fa-user mr-1"></i>{{ article.author.get_full_name|default:article.author.username }}
+                                </span>
+                                <span class="flex items-center">
+                                    <i class="fas fa-clock mr-1"></i>{{ article.reading_time }} min read
+                                </span>
+                            </div>
+                            
+                            <!-- Category and Type -->
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                    {{ article.category.name }}
+                                </span>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
+                                    {{ article.get_article_type_display }}
+                                </span>
+                            </div>
+                            
+                            <!-- Title and Excerpt -->
+                            <h2 class="text-xl font-bold text-gray-900 mb-3 hover:text-green-600 transition-colors">
+                                <a href="{% url 'content:article_detail' slug=article.slug %}">{{ article.title }}</a>
+                            </h2>
+                            <p class="text-gray-600 mb-4">{{ article.excerpt }}</p>
+                            
+                            <!-- Tags -->
+                            {% if article.tags.all %}
+                            <div class="flex flex-wrap gap-1 mb-4">
+                                {% for tag in article.tags.all|slice:":3" %}
+                                <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">{{ tag.name }}</span>
+                                {% endfor %}
+                                {% if article.tags.count > 3 %}
+                                <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">+{{ article.tags.count|add:"-3" }} more</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Read More -->
+                            <a href="{% url 'content:article_detail' slug=article.slug %}" 
+                               class="inline-flex items-center text-green-600 hover:text-green-800 font-medium">
+                                Read More
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <div class="flex justify-center mt-12">
+                    <nav class="flex items-center space-x-2">
+                        {% if page_obj.has_previous %}
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="px-3 py-2 bg-green-600 text-white rounded-lg">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}" 
+                           class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">{{ num }}</a>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <!-- Popular Articles -->
+                {% if popular_articles %}
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Popular Articles</h3>
+                    <div class="space-y-4">
+                        {% for article in popular_articles %}
+                        <div class="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
+                            <h4 class="font-semibold text-gray-900 mb-1 hover:text-green-600 transition-colors">
+                                <a href="{% url 'content:article_detail' slug=article.slug %}">{{ article.title|truncatewords:8 }}</a>
+                            </h4>
+                            <p class="text-sm text-gray-500">{{ article.view_count }} views</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Categories -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Categories</h3>
+                    <div class="space-y-2">
+                        {% for cat in categories %}
+                        <a href="?category={{ cat.slug }}" 
+                           class="flex items-center justify-between text-gray-700 hover:text-green-600 transition-colors">
+                            <span>{{ cat.name }}</span>
+                            <span class="text-sm text-gray-500">{{ cat.article_count }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Popular Tags -->
+                {% if popular_tags %}
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Popular Tags</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for tag in popular_tags %}
+                        <a href="?tag={{ tag.slug }}" 
+                           class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full hover:bg-green-100 hover:text-green-700 transition-colors">
+                            {{ tag.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% else %}
+        <!-- No Articles -->
+        <div class="text-center py-16">
+            <i class="fas fa-newspaper text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No articles found</h3>
+            <p class="text-gray-600 mb-6">Try adjusting your search criteria or browse all categories.</p>
+            <a href="{% url 'content:article_list' %}" 
+               class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors">
+                View All Articles
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

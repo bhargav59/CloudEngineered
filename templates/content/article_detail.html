@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ article.title }} - {{ site_name }}{% endblock %}
+{% block meta_description %}{{ article.excerpt }}{% endblock %}
+
+{% block content %}
+<!-- Article Header -->
+<article class="bg-white">
+    <!-- Featured Image -->
+    {% if article.featured_image %}
+    <div class="aspect-[21/9] overflow-hidden">
+        <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" 
+             class="w-full h-full object-cover">
+    </div>
+    {% endif %}
+    
+    <!-- Article Content -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Breadcrumb -->
+        <nav class="mb-8" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-2 text-sm text-gray-500">
+                <li><a href="{% url 'core:home' %}" class="hover:text-gray-700">Home</a></li>
+                <li><i class="fas fa-chevron-right text-xs"></i></li>
+                <li><a href="{% url 'content:article_list' %}" class="hover:text-gray-700">Articles</a></li>
+                <li><i class="fas fa-chevron-right text-xs"></i></li>
+                <li><a href="{% url 'content:article_list' %}?category={{ article.category.slug }}" class="hover:text-gray-700">{{ article.category.name }}</a></li>
+                <li><i class="fas fa-chevron-right text-xs"></i></li>
+                <li class="text-gray-900">{{ article.title|truncatewords:5 }}</li>
+            </ol>
+        </nav>
+        
+        <!-- Article Meta -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                    {{ article.category.name }}
+                </span>
+                <span class="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">
+                    {{ article.get_article_type_display }}
+                </span>
+                {% if article.is_featured %}
+                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
+                    <i class="fas fa-star mr-1"></i>Featured
+                </span>
+                {% endif %}
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{{ article.title }}</h1>
+            
+            <div class="flex items-center gap-6 text-gray-600 mb-6">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-user text-gray-500"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium text-gray-900">{{ article.author.get_full_name|default:article.author.username }}</div>
+                        <div class="text-sm">{{ article.published|date:"F d, Y" }}</div>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-clock mr-2"></i>
+                    <span>{{ article.reading_time }} min read</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-eye mr-2"></i>
+                    <span>{{ article.view_count }} views</span>
+                </div>
+            </div>
+            
+            <!-- Excerpt -->
+            {% if article.excerpt %}
+            <p class="text-xl text-gray-600 leading-relaxed mb-8">{{ article.excerpt }}</p>
+            {% endif %}
+            
+            <!-- Tags -->
+            {% if article.tags.all %}
+            <div class="flex flex-wrap gap-2 mb-8">
+                {% for tag in article.tags.all %}
+                <a href="{% url 'content:article_list' %}?tag={{ tag.slug }}" 
+                   class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full hover:bg-green-100 hover:text-green-700 transition-colors">
+                    {{ tag.name }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Article Body -->
+        <div class="prose prose-lg max-w-none mb-12">
+            {{ article.content|linebreaks }}
+        </div>
+        
+        <!-- Article Footer -->
+        <div class="border-t border-gray-200 pt-8">
+            <!-- Share Buttons -->
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Share this article</h3>
+                    <div class="flex gap-2">
+                        <a href="https://twitter.com/intent/tweet?text={{ article.title|urlencode }}&url={{ request.build_absolute_uri }}" 
+                           target="_blank" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}" 
+                           target="_blank" class="p-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition-colors">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" 
+                           target="_blank" class="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Updated Date -->
+                {% if article.updated != article.published %}
+                <div class="text-sm text-gray-500">
+                    Last updated: {{ article.updated|date:"F d, Y" }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Author Bio -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-2xl text-gray-500"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">{{ article.author.get_full_name|default:article.author.username }}</h4>
+                        {% if article.author.profile.bio %}
+                        <p class="text-gray-600 mb-3">{{ article.author.profile.bio }}</p>
+                        {% endif %}
+                        <div class="flex gap-3">
+                            {% if article.author.profile.website %}
+                            <a href="{{ article.author.profile.website }}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-globe"></i>
+                            </a>
+                            {% endif %}
+                            {% if article.author.profile.twitter %}
+                            <a href="https://twitter.com/{{ article.author.profile.twitter }}" target="_blank" class="text-blue-500 hover:text-blue-700">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            {% endif %}
+                            {% if article.author.profile.linkedin %}
+                            <a href="{{ article.author.profile.linkedin }}" target="_blank" class="text-blue-700 hover:text-blue-900">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- Related Articles -->
+{% if related_articles %}
+<section class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Related Articles</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for related_article in related_articles %}
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                {% if related_article.featured_image %}
+                <div class="aspect-video overflow-hidden rounded-t-lg">
+                    <img src="{{ related_article.featured_image.url }}" alt="{{ related_article.title }}" 
+                         class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                </div>
+                {% endif %}
+                <div class="p-6">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                            {{ related_article.category.name }}
+                        </span>
+                        <span class="text-sm text-gray-500">{{ related_article.published|date:"M d" }}</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2 hover:text-green-600 transition-colors">
+                        <a href="{% url 'content:article_detail' slug=related_article.slug %}">{{ related_article.title }}</a>
+                    </h3>
+                    <p class="text-gray-600 text-sm mb-4">{{ related_article.excerpt|truncatewords:15 }}</p>
+                    <a href="{% url 'content:article_detail' slug=related_article.slug %}" 
+                       class="text-green-600 hover:text-green-800 font-medium text-sm">
+                        Read More →
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Navigation -->
+<section class="bg-white py-8 border-t border-gray-200">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between">
+            {% if previous_article %}
+            <a href="{% url 'content:article_detail' slug=previous_article.slug %}" 
+               class="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+                <i class="fas fa-chevron-left mr-2"></i>
+                <div>
+                    <div class="text-sm">Previous</div>
+                    <div class="font-medium">{{ previous_article.title|truncatewords:5 }}</div>
+                </div>
+            </a>
+            {% else %}
+            <div></div>
+            {% endif %}
+            
+            {% if next_article %}
+            <a href="{% url 'content:article_detail' slug=next_article.slug %}" 
+               class="flex items-center text-gray-600 hover:text-gray-900 transition-colors text-right">
+                <div>
+                    <div class="text-sm">Next</div>
+                    <div class="font-medium">{{ next_article.title|truncatewords:5 }}</div>
+                </div>
+                <i class="fas fa-chevron-right ml-2"></i>
+            </a>
+            {% else %}
+            <div></div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

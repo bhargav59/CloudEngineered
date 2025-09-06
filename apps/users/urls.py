@@ -1,0 +1,9 @@
+from django.urls import path
+from . import views
+
+app_name = 'users'
+
+urlpatterns = [
+    # User URLs will be added here
+    # path('profile/', views.profile, name='profile'),
+]

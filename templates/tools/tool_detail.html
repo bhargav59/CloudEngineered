@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ tool.name }} - {{ tool.category.name }} Tool Review - {{ site_name }}{% endblock %}
+{% block meta_description %}{{ tool.description|truncatewords:25 }}{% endblock %}
+
+{% block content %}
+<!-- Tool Header -->
+<section class="bg-white py-8 border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Tool Info -->
+            <div class="flex-1">
+                <div class="flex items-start gap-6 mb-6">
+                    {% if tool.logo %}
+                    <img src="{{ tool.logo.url }}" alt="{{ tool.name }} logo" class="w-20 h-20 rounded-lg shadow-md">
+                    {% else %}
+                    <div class="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-tools text-2xl text-gray-500"></i>
+                    </div>
+                    {% endif %}
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h1 class="text-3xl font-bold text-gray-900">{{ tool.name }}</h1>
+                            {% if tool.is_verified %}
+                            <i class="fas fa-check-circle text-blue-600" title="Verified Tool"></i>
+                            {% endif %}
+                        </div>
+                        <p class="text-lg text-gray-600 mb-3">{{ tool.description }}</p>
+                        <div class="flex items-center gap-4">
+                            <a href="{% url 'tools:category_list' %}" class="text-blue-600 hover:text-blue-800">{{ tool.category.name }}</a>
+                            {% if tool.rating %}
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400 mr-2">
+                                    {% for star in tool.rating_stars %}
+                                    <i class="fas fa-star"></i>
+                                    {% endfor %}
+                                    {% for star in tool.rating_empty_stars %}
+                                    <i class="far fa-star"></i>
+                                    {% endfor %}
+                                </div>
+                                <span class="text-gray-600">{{ tool.rating }} ({{ tool.reviews.count }} review{{ tool.reviews.count|pluralize }})</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tags -->
+                {% if tool.tags.all %}
+                <div class="flex flex-wrap gap-2 mb-6">
+                    {% for tag in tool.tags.all %}
+                    <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Tool Actions -->
+            <div class="lg:w-80">
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <!-- Pricing -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Pricing</h3>
+                        {% if tool.pricing_model == 'free' %}
+                        <div class="text-2xl font-bold text-green-600 mb-2">Free</div>
+                        {% elif tool.pricing_model == 'freemium' %}
+                        <div class="text-2xl font-bold text-blue-600 mb-2">Freemium</div>
+                        {% elif tool.pricing_model == 'paid' %}
+                        <div class="text-2xl font-bold text-orange-600 mb-2">Paid</div>
+                        {% elif tool.pricing_model == 'enterprise' %}
+                        <div class="text-2xl font-bold text-purple-600 mb-2">Enterprise</div>
+                        {% endif %}
+                        {% if tool.pricing_details %}
+                        <p class="text-gray-600 text-sm">{{ tool.pricing_details }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="space-y-3">
+                        {% if tool.website %}
+                        <a href="{{ tool.website }}" target="_blank" 
+                           class="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-external-link-alt mr-2"></i>Visit Website
+                        </a>
+                        {% endif %}
+                        
+                        {% if tool.documentation %}
+                        <a href="{{ tool.documentation }}" target="_blank" 
+                           class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-book mr-2"></i>Documentation
+                        </a>
+                        {% endif %}
+                        
+                        {% if tool.github %}
+                        <a href="{{ tool.github }}" target="_blank" 
+                           class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fab fa-github mr-2"></i>View on GitHub
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div>
+                                <div class="text-2xl font-bold text-gray-900">{{ tool.view_count }}</div>
+                                <div class="text-sm text-gray-500">Views</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-gray-900">{{ tool.reviews.count }}</div>
+                                <div class="text-sm text-gray-500">Reviews</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tool Details -->
+<section class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2">
+                <!-- Description -->
+                {% if tool.long_description %}
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
+                    <div class="prose max-w-none">
+                        {{ tool.long_description|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Features -->
+                {% if tool.features.all %}
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Key Features</h2>
+                    <ul class="space-y-2">
+                        {% for feature in tool.features.all %}
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-600 mt-1 mr-3"></i>
+                            <span>{{ feature.name }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <!-- Reviews -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Reviews</h2>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Write a Review</a>
+                    </div>
+                    
+                    {% if reviews %}
+                    <div class="space-y-6">
+                        {% for review in reviews %}
+                        <div class="bg-white border border-gray-200 rounded-lg p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-user text-gray-500"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">{{ review.user.get_full_name|default:review.user.username }}</h4>
+                                        <p class="text-sm text-gray-500">{{ review.created|date:"M d, Y" }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex text-yellow-400">
+                                    {% for star in review.rating_stars %}
+                                    <i class="fas fa-star"></i>
+                                    {% endfor %}
+                                    {% for star in review.rating_empty_stars %}
+                                    <i class="far fa-star"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="text-gray-700">{{ review.comment }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8 bg-gray-50 rounded-lg">
+                        <i class="fas fa-comments text-3xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-600">No reviews yet. Be the first to review this tool!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <!-- Related Tools -->
+                {% if related_tools %}
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Related Tools</h3>
+                    <div class="space-y-4">
+                        {% for related_tool in related_tools %}
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex items-center mb-2">
+                                {% if related_tool.logo %}
+                                <img src="{{ related_tool.logo.url }}" alt="{{ related_tool.name }} logo" class="w-8 h-8 rounded mr-3">
+                                {% else %}
+                                <div class="w-8 h-8 bg-gray-200 rounded flex items-center justify-center mr-3">
+                                    <i class="fas fa-tools text-xs text-gray-500"></i>
+                                </div>
+                                {% endif %}
+                                <h4 class="font-semibold text-gray-900">{{ related_tool.name }}</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">{{ related_tool.description|truncatewords:10 }}</p>
+                            <a href="{% url 'tools:tool_detail' slug=related_tool.slug %}" 
+                               class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                View Details →
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Related Articles -->
+                {% if related_articles %}
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Related Articles</h3>
+                    <div class="space-y-4">
+                        {% for article in related_articles %}
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <h4 class="font-semibold text-gray-900 mb-2">{{ article.title }}</h4>
+                            <p class="text-sm text-gray-600 mb-3">{{ article.excerpt|truncatewords:15 }}</p>
+                            <a href="{% url 'content:article_detail' slug=article.slug %}" 
+                               class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                Read More →
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

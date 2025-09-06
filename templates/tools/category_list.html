@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - {{ site_name }}{% endblock %}
+{% block meta_description %}{{ page_description }}{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Tool Categories</h1>
+            <p class="text-xl text-blue-100 max-w-3xl mx-auto">
+                Discover cloud engineering tools organized by category. From CI/CD to monitoring, security, and beyond.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Categories -->
+{% if featured_categories %}
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Featured Categories</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for category in featured_categories %}
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        {% if category.icon %}
+                        <i class="{{ category.icon }} text-2xl mr-3" style="color: {{ category.color }}"></i>
+                        {% endif %}
+                        <h3 class="text-xl font-semibold text-gray-900">{{ category.name }}</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">{{ category.description }}</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-500">{{ category.tool_count }} tool{{ category.tool_count|pluralize }}</span>
+                        <a href="{% url 'tools:tool_list' category=category.slug %}" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                            Explore Tools
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- All Categories -->
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">All Categories</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for category in categories %}
+            <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200">
+                <a href="{% url 'tools:tool_list' category=category.slug %}" class="block p-6 h-full">
+                    <div class="flex items-center mb-3">
+                        {% if category.icon %}
+                        <i class="{{ category.icon }} text-xl mr-3" style="color: {{ category.color }}"></i>
+                        {% endif %}
+                        <h3 class="text-lg font-semibold text-gray-900">{{ category.name }}</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ category.description }}</p>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-500">{{ category.tool_count }} tool{{ category.tool_count|pluralize }}</span>
+                        {% if category.is_featured %}
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Featured</span>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="bg-blue-600 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">Can't Find What You're Looking For?</h2>
+        <p class="text-xl text-blue-100 mb-8">
+            Suggest a new tool or category for our platform.
+        </p>
+        <a href="{% url 'core:contact' %}" 
+           class="inline-flex items-center px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
+            Suggest a Tool
+            <i class="fas fa-plus ml-2"></i>
+        </a>
+    </div>
+</section>
+{% endblock %}

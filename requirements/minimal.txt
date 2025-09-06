@@ -1,0 +1,16 @@
+# Minimal Django requirements for basic functionality
+Django>=4.2.0,<5.0
+djangorestframework>=3.14.0
+django-cors-headers>=4.3.0
+django-filter>=23.3.0
+django-extensions>=3.2.0
+
+# Database
+psycopg2-binary>=2.9.7
+
+# Task Queue
+redis>=4.6.0
+celery>=5.3.0
+
+# Configuration Management
+python-decouple>=3.8
