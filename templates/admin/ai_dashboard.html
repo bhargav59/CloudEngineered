@@ -1,0 +1,499 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block title %}AI Content Dashboard{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .ai-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .ai-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .stat-number {
+        font-size: 2.5em;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .stat-label {
+        opacity: 0.9;
+        font-size: 0.9em;
+    }
+    .tool-list {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    .tool-item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+    }
+    .tool-item:last-child {
+        border-bottom: none;
+    }
+    .tool-item:hover {
+        background-color: #f8f9fa;
+    }
+    .btn-ai {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85em;
+    }
+    .btn-ai:hover {
+        opacity: 0.9;
+    }
+    .btn-ai:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    .provider-selector {
+        margin-left: 10px;
+        padding: 4px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.85em;
+    }
+    .bulk-operations {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .status-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    .status-success { background-color: #28a745; }
+    .status-warning { background-color: #ffc107; }
+    .status-error { background-color: #dc3545; }
+    .status-info { background-color: #17a2b8; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-dashboard">
+    <h1>🤖 AI Content Generation Dashboard</h1>
+    <p class="help">Manage AI-powered content generation for CloudEngineered platform</p>
+
+    <!-- AI Statistics -->
+    <div class="ai-stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ ai_stats.total_ai_articles }}</div>
+            <div class="stat-label">Total AI Articles</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ ai_stats.ai_articles_this_month }}</div>
+            <div class="stat-label">This Month</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ ai_stats.tools_without_reviews }}</div>
+            <div class="stat-label">Tools Need Reviews</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ ai_stats.pending_comparisons }}</div>
+            <div class="stat-label">Pending Comparisons</div>
+        </div>
+    </div>
+
+    <!-- Bulk Operations -->
+    <div class="bulk-operations">
+        <h3>🚀 Bulk Operations</h3>
+        <form method="post" action="{% url 'admin:bulk_ai_operations' %}">
+            {% csrf_token %}
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="submit" name="operation" value="generate_reviews_for_new_tools" class="btn-ai">
+                    Generate Reviews for New Tools
+                </button>
+                <button type="submit" name="operation" value="generate_category_comparisons" class="btn-ai">
+                    Generate Category Comparisons
+                </button>
+                <button type="submit" name="operation" value="generate_all_trend_analyses" class="btn-ai">
+                    Generate All Trend Analyses
+                </button>
+                <button type="button" onclick="scanGitHub()" class="btn-ai">
+                    <span class="status-indicator status-info"></span>
+                    Scan GitHub for New Tools
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        
+        <!-- Tools Needing Reviews -->
+        <div class="ai-card">
+            <h3>📝 Tools Needing Reviews</h3>
+            <p>Recently added tools that don't have AI-generated reviews yet.</p>
+            
+            <div class="tool-list">
+                {% for tool in tools_needing_reviews %}
+                <div class="tool-item">
+                    <div style="flex: 1;">
+                        <strong>{{ tool.name }}</strong>
+                        <br>
+                        <small style="color: #666;">
+                            {{ tool.description|truncatechars:100 }}
+                        </small>
+                        <br>
+                        <small style="color: #888;">
+                            Added: {{ tool.created_at|date:"M d, Y" }} | 
+                            Stars: {{ tool.github_stars|default:"N/A" }}
+                        </small>
+                    </div>
+                    <div>
+                        <select class="provider-selector" id="provider-{{ tool.id }}">
+                            <option value="openai">OpenAI</option>
+                            <option value="anthropic">Anthropic</option>
+                        </select>
+                        <button 
+                            class="btn-ai" 
+                            onclick="generateReview({{ tool.id }})"
+                            id="btn-review-{{ tool.id }}">
+                            Generate Review
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="tool-item">
+                    <em>All recent tools have reviews! 🎉</em>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Categories for Trend Analysis -->
+        <div class="ai-card">
+            <h3>📊 Category Trend Analysis</h3>
+            <p>Generate market trend analyses for tool categories.</p>
+            
+            <div class="tool-list">
+                {% for category in categories %}
+                <div class="tool-item">
+                    <div style="flex: 1;">
+                        <strong>{{ category.name }}</strong>
+                        <br>
+                        <small style="color: #666;">
+                            {{ category.tool_count }} tools total, 
+                            {{ category.recent_tools }} added recently
+                        </small>
+                    </div>
+                    <div>
+                        <select class="provider-selector" id="provider-cat-{{ category.id }}">
+                            <option value="openai">OpenAI</option>
+                            <option value="anthropic">Anthropic</option>
+                        </select>
+                        <button 
+                            class="btn-ai" 
+                            onclick="generateTrendAnalysis({{ category.id }})"
+                            id="btn-trend-{{ category.id }}">
+                            Generate Analysis
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent AI Content -->
+    <div class="ai-card">
+        <h3>🤖 Recent AI-Generated Content</h3>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Title</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Type</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Provider</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Created</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in recent_ai_content %}
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                            <a href="{% url 'admin:content_article_change' article.id %}" target="_blank">
+                                {{ article.title|truncatechars:60 }}
+                            </a>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                            <span style="background: #e3f2fd; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">
+                                {{ article.article_type|default:"article" }}
+                            </span>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                            {{ article.ai_provider|default:"Unknown" }}
+                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                            {{ article.created_at|date:"M d, H:i" }}
+                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                            {% if article.status == 'published' %}
+                                <span class="status-indicator status-success"></span>Published
+                            {% elif article.status == 'draft' %}
+                                <span class="status-indicator status-warning"></span>Draft
+                            {% else %}
+                                <span class="status-indicator status-info"></span>{{ article.status|title }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="padding: 20px; text-align: center; color: #666;">
+                            No AI-generated content yet. Start generating some content above!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tool Comparison Builder -->
+    <div class="ai-card">
+        <h3>⚖️ Tool Comparison Builder</h3>
+        <p>Select multiple tools to generate AI-powered comparisons.</p>
+        
+        <form id="comparison-form">
+            {% csrf_token %}
+            <div style="margin-bottom: 15px;">
+                <label>Select AI Provider:</label>
+                <select id="comparison-provider" class="provider-selector">
+                    <option value="openai">OpenAI GPT-4</option>
+                    <option value="anthropic">Anthropic Claude</option>
+                </select>
+            </div>
+            
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+                {% regroup tools_needing_reviews by category as tools_by_category %}
+                {% for category in tools_by_category %}
+                    <h4 style="margin: 10px 0 5px 0; color: #333;">{{ category.grouper|default:"Uncategorized" }}</h4>
+                    {% for tool in category.list %}
+                    <label style="display: block; padding: 5px 0;">
+                        <input type="checkbox" name="comparison_tools" value="{{ tool.id }}" style="margin-right: 8px;">
+                        {{ tool.name }} 
+                        <small style="color: #666;">({{ tool.github_stars|default:"0" }} stars)</small>
+                    </label>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <button type="button" onclick="generateComparison()" class="btn-ai" id="btn-comparison">
+                    Generate Comparison
+                </button>
+                <small style="margin-left: 10px; color: #666;">
+                    Select at least 2 tools to compare
+                </small>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Status Messages -->
+<div id="status-messages" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+
+<script>
+function showMessage(message, type = 'info') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert alert-${type}`;
+    messageDiv.style.cssText = `
+        background: ${type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#d1ecf1'};
+        color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460'};
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        border: 1px solid ${type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : '#bee5eb'};
+    `;
+    messageDiv.textContent = message;
+    
+    document.getElementById('status-messages').appendChild(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 5000);
+}
+
+function generateReview(toolId) {
+    const btn = document.getElementById(`btn-review-${toolId}`);
+    const provider = document.getElementById(`provider-${toolId}`).value;
+    
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+    
+    fetch('{% url "admin:generate_tool_review_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: `tool_id=${toolId}&provider=${provider}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage(data.message, 'success');
+            btn.textContent = 'Queued ✓';
+            btn.style.background = '#28a745';
+        } else {
+            showMessage(data.error, 'error');
+            btn.disabled = false;
+            btn.textContent = 'Generate Review';
+        }
+    })
+    .catch(error => {
+        showMessage('Error: ' + error.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Generate Review';
+    });
+}
+
+function generateTrendAnalysis(categoryId) {
+    const btn = document.getElementById(`btn-trend-${categoryId}`);
+    const provider = document.getElementById(`provider-cat-${categoryId}`).value;
+    
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+    
+    fetch('{% url "admin:generate_trend_analysis_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: `category_id=${categoryId}&provider=${provider}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage(data.message, 'success');
+            btn.textContent = 'Queued ✓';
+            btn.style.background = '#28a745';
+        } else {
+            showMessage(data.error, 'error');
+            btn.disabled = false;
+            btn.textContent = 'Generate Analysis';
+        }
+    })
+    .catch(error => {
+        showMessage('Error: ' + error.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Generate Analysis';
+    });
+}
+
+function generateComparison() {
+    const checkboxes = document.querySelectorAll('input[name="comparison_tools"]:checked');
+    const provider = document.getElementById('comparison-provider').value;
+    const btn = document.getElementById('btn-comparison');
+    
+    if (checkboxes.length < 2) {
+        showMessage('Please select at least 2 tools to compare', 'error');
+        return;
+    }
+    
+    const toolIds = Array.from(checkboxes).map(cb => cb.value);
+    
+    btn.disabled = true;
+    btn.textContent = 'Generating Comparison...';
+    
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    toolIds.forEach(id => formData.append('tool_ids', id));
+    formData.append('provider', provider);
+    
+    fetch('{% url "admin:generate_comparison_ajax" %}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage(data.message, 'success');
+            btn.textContent = 'Comparison Queued ✓';
+            btn.style.background = '#28a745';
+            // Uncheck all checkboxes
+            checkboxes.forEach(cb => cb.checked = false);
+        } else {
+            showMessage(data.error, 'error');
+            btn.disabled = false;
+            btn.textContent = 'Generate Comparison';
+        }
+    })
+    .catch(error => {
+        showMessage('Error: ' + error.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Generate Comparison';
+    });
+}
+
+function scanGitHub() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="status-indicator status-warning"></span>Scanning...';
+    
+    fetch('{% url "admin:scan_github_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage(data.message, 'success');
+            btn.innerHTML = '<span class="status-indicator status-success"></span>Scan Queued ✓';
+            btn.style.background = '#28a745';
+        } else {
+            showMessage(data.error, 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<span class="status-indicator status-info"></span>Scan GitHub for New Tools';
+        }
+    })
+    .catch(error => {
+        showMessage('Error: ' + error.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="status-indicator status-info"></span>Scan GitHub for New Tools';
+    });
+}
+
+// Auto-refresh every 30 seconds to show updated task statuses
+setInterval(() => {
+    // Only refresh if there are any pending operations
+    const pendingButtons = document.querySelectorAll('button[disabled]');
+    if (pendingButtons.length > 0) {
+        location.reload();
+    }
+}, 30000);
+</script>
+{% endblock %}

@@ -4,6 +4,11 @@ Core URL patterns for CloudEngineered platform.
 
 from django.urls import path
 from . import views
+from .views_ai import (
+    AIDashboardView, generate_tool_review_ajax, generate_comparison_ajax,
+    generate_trend_analysis_ajax, scan_github_ajax, ai_content_preview,
+    bulk_ai_operations, ai_content_analytics
+)
 
 app_name = 'core'
 
@@ -22,4 +27,14 @@ urlpatterns = [
     path('contact/', views.ContactView.as_view(), name='contact'),
     path('privacy/', views.PrivacyPolicyView.as_view(), name='privacy'),
     path('terms/', views.TermsOfServiceView.as_view(), name='terms'),
+    
+    # AI Dashboard (Admin only)
+    path('admin/ai-dashboard/', AIDashboardView.as_view(), name='ai_dashboard'),
+    path('admin/ai/generate-review/', generate_tool_review_ajax, name='generate_tool_review_ajax'),
+    path('admin/ai/generate-comparison/', generate_comparison_ajax, name='generate_comparison_ajax'),
+    path('admin/ai/generate-trend-analysis/', generate_trend_analysis_ajax, name='generate_trend_analysis_ajax'),
+    path('admin/ai/scan-github/', scan_github_ajax, name='scan_github_ajax'),
+    path('admin/ai/preview/', ai_content_preview, name='ai_content_preview'),
+    path('admin/ai/bulk-operations/', bulk_ai_operations, name='bulk_ai_operations'),
+    path('admin/ai/analytics/', ai_content_analytics, name='ai_content_analytics'),
 ]
