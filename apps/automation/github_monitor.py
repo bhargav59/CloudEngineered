@@ -8,11 +8,14 @@ monitoring trends, and gathering repository statistics.
 import requests
 import logging
 import time
+try:
+    from github import Github
+except ImportError:
+    Github = None
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone
-from apps.tools.models import Tool, Category
 from decouple import config
 
 logger = logging.getLogger(__name__)
@@ -176,7 +179,7 @@ class GitHubMonitor:
             logger.error(f"Error fetching repository data for {owner}/{repo}: {str(e)}")
             return None
     
-    def categorize_repository(self, repo_data: Dict[str, Any]) -> Optional[Category]:
+    def categorize_repository(self, repo_data: Dict[str, Any]) -> Optional['Category']:
         """
         Automatically categorize a repository based on its metadata.
         
@@ -187,6 +190,8 @@ class GitHubMonitor:
             Category instance or None
         """
         try:
+            from apps.tools.models import Category
+            
             # Analyze repository metadata
             text_to_analyze = ' '.join([
                 repo_data.get('name', ''),
@@ -259,7 +264,7 @@ class GitHubMonitor:
         
         return None
     
-    def monitor_tool_updates(self, tool: Tool) -> Dict[str, Any]:
+    def monitor_tool_updates(self, tool: 'Tool') -> Dict[str, Any]:
         """
         Monitor a specific tool for updates and changes.
         
@@ -501,12 +506,14 @@ class GitHubMonitor:
         return releases[0] if releases else None
 
 import requests
-from github import Github
+try:
+    from github import Github
+except ImportError:
+    Github = None
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone
-from apps.tools.models import Tool, Category
 
 
 class GitHubMonitor:
@@ -612,7 +619,7 @@ class GitHubMonitor:
         except Exception as e:
             return {"error": str(e)}
     
-    def update_tool_github_stats(self, tool: Tool) -> bool:
+    def update_tool_github_stats(self, tool: 'Tool') -> bool:
         """
         Update GitHub statistics for an existing tool.
         

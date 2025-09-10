@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.db.models import Q, Count
 from django.utils import timezone
-from .models import Article, Tag
+from .models import Article, ContentTag
 from apps.tools.models import Category
 
 
@@ -37,9 +37,9 @@ class ArticleListView(ListView):
         tag_slug = self.request.GET.get('tag')
         if tag_slug:
             try:
-                tag = Tag.objects.get(slug=tag_slug)
+                tag = ContentTag.objects.get(slug=tag_slug)
                 queryset = queryset.filter(tags=tag)
-            except Tag.DoesNotExist:
+            except ContentTag.DoesNotExist:
                 pass
         
         # Search functionality
@@ -57,9 +57,9 @@ class ArticleListView(ListView):
         context = super().get_context_data(**kwargs)
         
         # Add filter options
-        context['categories'] = Category.objects.filter(is_active=True).order_by('name')
+        context['categories'] = Category.objects.all().order_by('name')
         context['article_types'] = Article.ARTICLE_TYPES
-        context['popular_tags'] = Tag.objects.annotate(
+        context['popular_tags'] = ContentTag.objects.annotate(
             article_count=Count('articles', filter=Q(articles__is_published=True))
         ).filter(article_count__gt=0).order_by('-article_count')[:10]
         

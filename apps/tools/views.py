@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.db.models import Q, Count, Avg
 from django.core.paginator import Paginator
-from .models import Category, Tool, Comparison, Review
+from .models import Category, Tool, ToolComparison, ToolReview
 from apps.content.models import Article
 
 
@@ -119,22 +119,22 @@ class ToolDetailView(DetailView):
 
 class ComparisonListView(ListView):
     """Display tool comparisons."""
-    model = Comparison
+    model = ToolComparison
     template_name = 'tools/comparison_list.html'
     context_object_name = 'comparisons'
     paginate_by = 15
     
     def get_queryset(self):
-        queryset = Comparison.objects.filter(
+        queryset = ToolComparison.objects.filter(
             is_published=True
-        ).select_related('category').prefetch_related('tools')
+        ).prefetch_related('tools')
         
-        # Filter by category if specified
+        # Filter by tool category if specified
         category_slug = self.request.GET.get('category')
         if category_slug:
             try:
                 category = Category.objects.get(slug=category_slug)
-                queryset = queryset.filter(category=category)
+                queryset = queryset.filter(tools__category=category).distinct()
             except Category.DoesNotExist:
                 pass
         
@@ -142,7 +142,7 @@ class ComparisonListView(ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.filter(is_active=True).order_by('name')
+        context['categories'] = Category.objects.all().order_by('name')
         context['selected_category'] = self.request.GET.get('category')
         context['page_title'] = 'Tool Comparisons'
         context['page_description'] = 'Compare tools side-by-side to make informed decisions.'

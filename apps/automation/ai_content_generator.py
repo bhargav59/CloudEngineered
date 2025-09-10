@@ -5,7 +5,7 @@ AI Content Generation Service for CloudEngineered platform.
 import openai
 import anthropic
 import json
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 from django.conf import settings
 from django.utils import timezone
 from apps.tools.models import Tool
