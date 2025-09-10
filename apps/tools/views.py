@@ -16,7 +16,7 @@ class CategoryListView(ListView):
         return Category.objects.filter(
             is_active=True
         ).annotate(
-            tool_count=Count('tools', filter=Q(tools__is_published=True))
+            tools_count=Count('tools', filter=Q(tools__is_published=True))
         ).order_by('sort_order', 'name')
     
     def get_context_data(self, **kwargs):

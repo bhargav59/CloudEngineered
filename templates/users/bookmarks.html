@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Bookmarks - CloudEngineered{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">My Bookmarks</h1>
+                    <p class="text-gray-600 mt-2">Manage your saved tools, articles, and comparisons.</p>
+                </div>
+                <a href="{% url 'users:dashboard' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="p-6">
+                <form method="get" class="flex flex-col sm:flex-row gap-4">
+                    <!-- Content Type Filter -->
+                    <div class="flex-1">
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
+                        <select name="type" id="type" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">All Types</option>
+                            <option value="tool" {% if content_type == 'tool' %}selected{% endif %}>Tools</option>
+                            <option value="article" {% if content_type == 'article' %}selected{% endif %}>Articles</option>
+                            <option value="comparison" {% if content_type == 'comparison' %}selected{% endif %}>Comparisons</option>
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="flex-2">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                        <input type="text" name="search" id="search" value="{{ search_query }}" 
+                               placeholder="Search notes and tags..." 
+                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex items-end">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                            <i class="fas fa-search mr-2"></i>
+                            Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bookmarks List -->
+        <div class="bg-white rounded-lg shadow">
+            {% if bookmarks %}
+                <div class="divide-y divide-gray-200">
+                    {% for bookmark in bookmarks %}
+                        <div class="p-6">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <!-- Content Type Badge -->
+                                    <div class="flex items-center space-x-3 mb-3">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            {% if bookmark.content_type == 'tool' %}bg-blue-100 text-blue-800
+                                            {% elif bookmark.content_type == 'article' %}bg-green-100 text-green-800
+                                            {% else %}bg-purple-100 text-purple-800{% endif %}">
+                                            <i class="
+                                                {% if bookmark.content_type == 'tool' %}fas fa-tools
+                                                {% elif bookmark.content_type == 'article' %}fas fa-newspaper
+                                                {% else %}fas fa-balance-scale{% endif %} mr-1"></i>
+                                            {{ bookmark.content_type|title }}
+                                        </span>
+                                        <span class="text-sm text-gray-500">ID: {{ bookmark.object_id }}</span>
+                                    </div>
+
+                                    <!-- Notes -->
+                                    {% if bookmark.notes %}
+                                        <div class="mb-3">
+                                            <p class="text-sm text-gray-900">{{ bookmark.notes }}</p>
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Tags -->
+                                    {% if bookmark.tags %}
+                                        <div class="mb-3">
+                                            <div class="flex flex-wrap gap-1">
+                                                {% for tag in bookmark.tags %}
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                                                        #{{ tag }}
+                                                    </span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Bookmark Info -->
+                                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                        <span>
+                                            <i class="fas fa-calendar mr-1"></i>
+                                            Bookmarked {{ bookmark.created_at|timesince }} ago
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="flex items-center space-x-2 ml-4">
+                                    <!-- Edit Bookmark Button -->
+                                    <button type="button" 
+                                            onclick="editBookmark({{ bookmark.id }})"
+                                            class="inline-flex items-center p-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+
+                                    <!-- Remove Bookmark Button -->
+                                    <button type="button" 
+                                            onclick="removeBookmark({{ bookmark.id }}, '{{ bookmark.content_type }}', {{ bookmark.object_id }})"
+                                            class="inline-flex items-center p-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+
+                                    <!-- View Content Button -->
+                                    <button type="button" 
+                                            onclick="viewContent('{{ bookmark.content_type }}', {{ bookmark.object_id }})"
+                                            class="inline-flex items-center px-3 py-2 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-blue-50">
+                                        <i class="fas fa-external-link-alt mr-1"></i>
+                                        View
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if bookmarks.has_other_pages %}
+                    <div class="px-6 py-4 border-t border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-700">
+                                Showing {{ bookmarks.start_index }} to {{ bookmarks.end_index }} of {{ bookmarks.paginator.count }} bookmarks
+                            </div>
+                            <div class="flex space-x-1">
+                                {% if bookmarks.has_previous %}
+                                    <a href="?page={{ bookmarks.previous_page_number }}{% if content_type %}&type={{ content_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}"
+                                       class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                                        Previous
+                                    </a>
+                                {% endif %}
+
+                                {% for num in bookmarks.paginator.page_range %}
+                                    {% if bookmarks.number == num %}
+                                        <span class="px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded-md">
+                                            {{ num }}
+                                        </span>
+                                    {% elif num > bookmarks.number|add:'-3' and num < bookmarks.number|add:'3' %}
+                                        <a href="?page={{ num }}{% if content_type %}&type={{ content_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}"
+                                           class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                                            {{ num }}
+                                        </a>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if bookmarks.has_next %}
+                                    <a href="?page={{ bookmarks.next_page_number }}{% if content_type %}&type={{ content_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}"
+                                       class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                                        Next
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-12">
+                    <i class="fas fa-bookmark text-gray-400 text-4xl mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No bookmarks yet</h3>
+                    <p class="text-gray-500 mb-6">Start bookmarking tools and articles to build your personal collection.</p>
+                    <div class="space-x-4">
+                        <a href="{% url 'tools:list' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                            <i class="fas fa-tools mr-2"></i>
+                            Browse Tools
+                        </a>
+                        <a href="{% url 'content:article_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            <i class="fas fa-newspaper mr-2"></i>
+                            Read Articles
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Bookmark Modal -->
+<div id="editBookmarkModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Bookmark</h3>
+            <form id="editBookmarkForm">
+                <div class="mb-4">
+                    <label for="bookmarkNotes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea id="bookmarkNotes" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Add your notes..."></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="bookmarkTags" class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                    <input type="text" id="bookmarkTags" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="tag1, tag2, tag3">
+                    <p class="text-xs text-gray-500 mt-1">Separate tags with commas</p>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Bookmark management functions
+function editBookmark(bookmarkId) {
+    // Show modal and load bookmark data
+    document.getElementById('editBookmarkModal').classList.remove('hidden');
+    // In a real implementation, you would load the bookmark data via AJAX
+}
+
+function closeEditModal() {
+    document.getElementById('editBookmarkModal').classList.add('hidden');
+}
+
+function removeBookmark(bookmarkId, contentType, objectId) {
+    if (confirm('Are you sure you want to remove this bookmark?')) {
+        // Send AJAX request to remove bookmark
+        fetch('{% url "users:add_bookmark" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `content_type=${contentType}&object_id=${objectId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function viewContent(contentType, objectId) {
+    // Navigate to the content
+    let url = '';
+    if (contentType === 'tool') {
+        url = `/tools/${objectId}/`;
+    } else if (contentType === 'article') {
+        url = `/content/articles/${objectId}/`;
+    } else if (contentType === 'comparison') {
+        url = `/tools/comparisons/${objectId}/`;
+    }
+    if (url) {
+        window.open(url, '_blank');
+    }
+}
+</script>
+{% endblock %}

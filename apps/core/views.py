@@ -44,8 +44,8 @@ class HomeView(TemplateView):
         
         # Popular categories
         context['popular_categories'] = Category.objects.annotate(
-            tool_count=Count('tools')
-        ).filter(tool_count__gt=0).order_by('-tool_count')[:6]
+            tools_count=Count('tools')
+        ).filter(tools_count__gt=0).order_by('-tools_count')[:6]
         
         # Stats for homepage
         context['stats'] = {
@@ -61,62 +61,153 @@ class HomeView(TemplateView):
 
 
 class SearchView(ListView):
-    """
-    Global search view for tools and content.
-    """
+    """Advanced global search with filtering and faceted search"""
     template_name = 'core/search.html'
     context_object_name = 'results'
     paginate_by = 20
-    
+
     def get_queryset(self):
         query = self.request.GET.get('q', '').strip()
-        if not query:
+        content_type = self.request.GET.get('type', '')
+        category_slug = self.request.GET.get('category', '')
+        sort_by = self.request.GET.get('sort', '')
+
+        if not query and not category_slug and not content_type:
             return []
-        
-        # Search in tools
-        tool_results = Tool.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query) |
-            Q(features__icontains=query),
-            is_published=True
-        ).select_related('category').order_by('-view_count')
-        
-        # Search in articles
-        article_results = Article.objects.filter(
-            Q(title__icontains=query) |
-            Q(content__icontains=query) |
-            Q(excerpt__icontains=query),
-            is_published=True
-        ).select_related('author').order_by('-published_at')
-        
-        # Combine results
+
         results = []
-        for tool in tool_results:
-            results.append({
-                'type': 'tool',
-                'object': tool,
-                'title': tool.name,
-                'description': tool.description,
-                'url': tool.get_absolute_url(),
-                'image': tool.logo,
-            })
-        
-        for article in article_results:
-            results.append({
-                'type': 'article',
-                'object': article,
-                'title': article.title,
-                'description': article.excerpt,
-                'url': article.get_absolute_url(),
-                'image': article.featured_image,
-            })
-        
+
+        # Search in tools (if not filtered to articles only)
+        if content_type != 'articles':
+            tool_query = Tool.objects.select_related('category', 'created_by')
+            
+            if query:
+                tool_query = tool_query.filter(
+                    Q(name__icontains=query) |
+                    Q(description__icontains=query) |
+                    Q(features__icontains=query) |
+                    Q(category__name__icontains=query)
+                )
+            
+            if category_slug:
+                tool_query = tool_query.filter(category__slug=category_slug)
+            
+            # Apply sorting
+            if sort_by:
+                if sort_by in ['name', '-name', 'created_at', '-created_at']:
+                    tool_query = tool_query.order_by(sort_by)
+            else:
+                # Default relevance sorting (query matches in name first, then description)
+                if query:
+                    tool_query = tool_query.extra(
+                        select={
+                            'relevance': "CASE "
+                                       "WHEN name ILIKE %s THEN 3 "
+                                       "WHEN description ILIKE %s THEN 2 "
+                                       "WHEN features ILIKE %s THEN 1 "
+                                       "ELSE 0 END"
+                        },
+                        select_params=[f'%{query}%', f'%{query}%', f'%{query}%']
+                    ).order_by('-relevance', '-created_at')
+
+            for tool in tool_query:
+                results.append({
+                    'type': 'tool',
+                    'object': tool,
+                    'title': tool.name,
+                    'description': tool.description,
+                    'url': tool.get_absolute_url(),
+                    'image': tool.image.url if tool.image else None,
+                    'category': tool.category.name if tool.category else None,
+                    'created_at': tool.created_at,
+                })
+
+        # Search in articles (if not filtered to tools only)
+        if content_type != 'tools':
+            article_query = Article.objects.select_related('author')
+            
+            if query:
+                article_query = article_query.filter(
+                    Q(title__icontains=query) |
+                    Q(content__icontains=query) |
+                    Q(excerpt__icontains=query) |
+                    Q(tags__icontains=query)
+                )
+            
+            # Apply sorting
+            if sort_by:
+                if sort_by in ['title', '-title', 'created_at', '-created_at']:
+                    # Map 'name' sorting to 'title' for articles
+                    article_sort = sort_by.replace('name', 'title')
+                    article_query = article_query.order_by(article_sort)
+            else:
+                # Default relevance sorting
+                if query:
+                    article_query = article_query.extra(
+                        select={
+                            'relevance': "CASE "
+                                       "WHEN title ILIKE %s THEN 3 "
+                                       "WHEN excerpt ILIKE %s THEN 2 "
+                                       "WHEN content ILIKE %s THEN 1 "
+                                       "ELSE 0 END"
+                        },
+                        select_params=[f'%{query}%', f'%{query}%', f'%{query}%']
+                    ).order_by('-relevance', '-created_at')
+
+            for article in article_query:
+                results.append({
+                    'type': 'article',
+                    'object': article,
+                    'title': article.title,
+                    'description': article.excerpt or (article.content[:200] + '...' if len(article.content) > 200 else article.content),
+                    'url': article.get_absolute_url(),
+                    'image': article.featured_image.url if hasattr(article, 'featured_image') and article.featured_image else None,
+                    'created_at': article.created_at,
+                })
+
+        # If no specific sorting was applied and we have mixed results, sort by relevance
+        if not sort_by and query and results:
+            results.sort(key=lambda x: (
+                3 if query.lower() in x['title'].lower() else
+                2 if query.lower() in x['description'].lower() else 1
+            ), reverse=True)
+
         return results
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['query'] = self.request.GET.get('q', '')
-        context['total_results'] = len(self.get_queryset())
+        query = self.request.GET.get('q', '').strip()
+        
+        # Search parameters
+        context['query'] = query
+        context['filters'] = {
+            'type': self.request.GET.get('type', ''),
+            'category': self.request.GET.get('category', ''),
+            'sort': self.request.GET.get('sort', ''),
+        }
+        
+        # Get total results count
+        context['total_results'] = len(self.get_queryset()) if hasattr(self, 'object_list') else 0
+        
+        # Get categories for filters
+        try:
+            from ..tools.models import Category
+            context['categories'] = Category.objects.filter(
+                tools__isnull=False
+            ).distinct().order_by('name')
+        except ImportError:
+            context['categories'] = []
+        
+        # Popular searches (simulate for now - in production this would come from analytics)
+        if not query:
+            context['popular_searches'] = [
+                {'query': 'kubernetes', 'count': 45},
+                {'query': 'docker', 'count': 38},
+                {'query': 'monitoring', 'count': 32},
+                {'query': 'ci/cd', 'count': 28},
+                {'query': 'security', 'count': 25},
+            ]
+        
         return context
 
 

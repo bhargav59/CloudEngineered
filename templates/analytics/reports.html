@@ -1,0 +1,378 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Analytics Reports - CloudEngineered{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reports-header {
+        background: linear-gradient(135deg, #1e40af 0%, #7c2d12 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        border-radius: 0 0 30px 30px;
+    }
+    .report-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-left: 4px solid #4f46e5;
+    }
+    .report-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    .report-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .filter-panel {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+    .btn-secondary {
+        background: #f8fafc;
+        color: #374151;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        border-color: #9ca3af;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reports-header">
+    <div class="container mx-auto px-4">
+        <h1 class="text-4xl font-bold mb-2">
+            <i class="fas fa-chart-bar mr-3"></i>Analytics Reports
+        </h1>
+        <p class="text-xl opacity-90">Generate comprehensive reports and insights</p>
+    </div>
+</div>
+
+<div class="container mx-auto px-4">
+    <!-- Filter Panel -->
+    <div class="filter-panel">
+        <h3 class="text-xl font-bold mb-4 text-gray-800">Report Filters</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option>Last 7 days</option>
+                    <option>Last 30 days</option>
+                    <option>Last 90 days</option>
+                    <option>Last 12 months</option>
+                    <option>Custom range</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option>All Reports</option>
+                    <option>Content Performance</option>
+                    <option>User Engagement</option>
+                    <option>Traffic Analysis</option>
+                    <option>Search Analytics</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Format</label>
+                <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option>PDF Report</option>
+                    <option>Excel Spreadsheet</option>
+                    <option>CSV Data</option>
+                    <option>Interactive Dashboard</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button class="btn-primary w-full">
+                    <i class="fas fa-filter mr-2"></i>Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Types Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {% for report_type in report_types %}
+        <div class="report-card">
+            <div class="report-icon bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                {% if report_type.id == 'content_performance' %}
+                    <i class="fas fa-chart-line"></i>
+                {% elif report_type.id == 'user_engagement' %}
+                    <i class="fas fa-users"></i>
+                {% elif report_type.id == 'traffic_analysis' %}
+                    <i class="fas fa-globe"></i>
+                {% elif report_type.id == 'search_analysis' %}
+                    <i class="fas fa-search"></i>
+                {% elif report_type.id == 'conversion_funnel' %}
+                    <i class="fas fa-funnel-dollar"></i>
+                {% elif report_type.id == 'performance_metrics' %}
+                    <i class="fas fa-tachometer-alt"></i>
+                {% else %}
+                    <i class="fas fa-chart-bar"></i>
+                {% endif %}
+            </div>
+            
+            <h3 class="text-xl font-bold text-gray-900 mb-3">{{ report_type.name }}</h3>
+            
+            <p class="text-gray-600 mb-4">
+                {% if report_type.id == 'content_performance' %}
+                    Analyze how your content performs across different metrics including views, engagement, and user interactions.
+                {% elif report_type.id == 'user_engagement' %}
+                    Track user behavior patterns, session duration, and interaction frequencies across the platform.
+                {% elif report_type.id == 'traffic_analysis' %}
+                    Monitor traffic sources, geographic distribution, and visitor flow patterns throughout your site.
+                {% elif report_type.id == 'search_analysis' %}
+                    Understand search patterns, popular queries, and search result effectiveness.
+                {% elif report_type.id == 'conversion_funnel' %}
+                    Track user journey from discovery to conversion and identify optimization opportunities.
+                {% elif report_type.id == 'performance_metrics' %}
+                    Monitor system performance, load times, and technical metrics affecting user experience.
+                {% endif %}
+            </p>
+            
+            <div class="flex space-x-2">
+                <button onclick="generateReport('{{ report_type.id }}')" class="btn-primary flex-1">
+                    <i class="fas fa-play mr-2"></i>Generate
+                </button>
+                <button onclick="scheduleReport('{{ report_type.id }}')" class="btn-secondary">
+                    <i class="fas fa-clock"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="bg-white rounded-xl p-6 shadow-lg mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-800">Recent Reports</h3>
+            <button class="btn-secondary">
+                <i class="fas fa-history mr-2"></i>View All
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-3 px-4 font-semibold text-gray-700">Report Name</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-700">Type</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-700">Generated</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
+                        <th class="text-center py-3 px-4 font-semibold text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-4">
+                            <div class="font-medium text-gray-900">Monthly Content Performance</div>
+                            <div class="text-sm text-gray-500">November 2024 Report</div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Content Performance</span>
+                        </td>
+                        <td class="py-3 px-4 text-gray-600">2 hours ago</td>
+                        <td class="py-3 px-4">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Completed</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <button class="text-indigo-600 hover:text-indigo-800 mr-2">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="text-purple-600 hover:text-purple-800 mr-2">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-share"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-4">
+                            <div class="font-medium text-gray-900">Weekly Traffic Analysis</div>
+                            <div class="text-sm text-gray-500">Week 45, 2024</div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">Traffic Analysis</span>
+                        </td>
+                        <td class="py-3 px-4 text-gray-600">1 day ago</td>
+                        <td class="py-3 px-4">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Completed</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <button class="text-indigo-600 hover:text-indigo-800 mr-2">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="text-purple-600 hover:text-purple-800 mr-2">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-share"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-4">
+                            <div class="font-medium text-gray-900">User Engagement Deep Dive</div>
+                            <div class="text-sm text-gray-500">Q4 2024 Analysis</div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">User Engagement</span>
+                        </td>
+                        <td class="py-3 px-4 text-gray-600">3 days ago</td>
+                        <td class="py-3 px-4">
+                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Processing</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <button class="text-gray-400 cursor-not-allowed mr-2">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="text-gray-400 cursor-not-allowed mr-2">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Scheduled Reports -->
+    <div class="bg-white rounded-xl p-6 shadow-lg">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-800">Scheduled Reports</h3>
+            <button onclick="createSchedule()" class="btn-primary">
+                <i class="fas fa-plus mr-2"></i>New Schedule
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-3">
+                    <h4 class="font-semibold text-gray-900">Weekly Summary</h4>
+                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">
+                    Content performance and traffic overview sent every Monday at 9 AM
+                </p>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-500">Next: Monday, 9:00 AM</span>
+                    <div class="space-x-2">
+                        <button class="text-indigo-600 hover:text-indigo-800">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-3">
+                    <h4 class="font-semibold text-gray-900">Monthly Dashboard</h4>
+                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Active</span>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">
+                    Comprehensive monthly analytics report sent on the 1st of each month
+                </p>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-500">Next: Dec 1, 8:00 AM</span>
+                    <div class="space-x-2">
+                        <button class="text-indigo-600 hover:text-indigo-800">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center text-center">
+                <i class="fas fa-plus text-2xl text-gray-400 mb-2"></i>
+                <p class="text-gray-500 text-sm mb-3">Create a new scheduled report</p>
+                <button onclick="createSchedule()" class="btn-secondary text-sm">
+                    Add Schedule
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function generateReport(reportType) {
+    // Show loading state
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+    button.disabled = true;
+
+    // Simulate report generation
+    setTimeout(() => {
+        alert(`${reportType.replace('_', ' ').toUpperCase()} report is being generated. You'll receive an email when it's ready.`);
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }, 2000);
+}
+
+function scheduleReport(reportType) {
+    // Open scheduling modal or redirect to scheduling page
+    alert(`Schedule ${reportType.replace('_', ' ')} report functionality will be implemented`);
+}
+
+function createSchedule() {
+    // Open schedule creation modal
+    alert('Schedule creation functionality will be implemented');
+}
+
+// Real-time status updates for processing reports
+function updateReportStatus() {
+    // Fetch and update report statuses
+    console.log('Checking report statuses...');
+}
+
+// Check report status every 30 seconds
+setInterval(updateReportStatus, 30000);
+</script>
+{% endblock %}

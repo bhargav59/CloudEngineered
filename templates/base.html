@@ -66,6 +66,9 @@
                     <a href="{% url 'content:article_list' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Articles</a>
                     <a href="{% url 'tools:comparison_list' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Comparisons</a>
                     <a href="{% url 'core:about' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">About</a>
+                    {% if user.is_staff or user.is_superuser %}
+                        <a href="{% url 'analytics:dashboard' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Analytics</a>
+                    {% endif %}
                 </div>
                 
                 <!-- Search -->
@@ -87,7 +90,7 @@
                             </button>
                         </div>
                     {% else %}
-                        <a href="{% url 'account_login' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Login</a>
+                        <a href="{% url 'login' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Login</a>
                     {% endif %}
                 </div>
                 

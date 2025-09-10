@@ -206,7 +206,7 @@
                     </h3>
                     <p class="text-sm text-gray-600 mb-3">{{ category.description|truncatechars:80 }}</p>
                     <div class="text-xs text-blue-600 font-medium">
-                        {{ category.tool_count }} tool{{ category.tool_count|pluralize }}
+                        {{ category.tools_count }} tool{{ category.tools_count|pluralize }}
                     </div>
                 </div>
             </a>
@@ -386,7 +386,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock %}
 </section>
 
 <!-- Featured Tools -->
@@ -476,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     {% endif %}
                     <h3 class="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{{ category.name }}</h3>
-                    <p class="text-sm text-gray-500 mt-1">{{ category.tool_count }} tools</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ category.tools_count }} tools</p>
                 </div>
             </a>
             {% endfor %}

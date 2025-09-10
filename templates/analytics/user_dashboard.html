@@ -1,0 +1,389 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}My Analytics - CloudEngineered{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js" rel="stylesheet">
+<style>
+    .analytics-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        border-radius: 0 0 30px 30px;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        border-left: 4px solid #4f46e5;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+    }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #4f46e5;
+        margin-bottom: 0.5rem;
+    }
+    .stat-label {
+        color: #6b7280;
+        font-weight: 500;
+    }
+    .insight-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        background: #f8fafc;
+        transition: background 0.3s ease;
+    }
+    .activity-item:hover {
+        background: #e5e7eb;
+    }
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+    }
+    .premium-badge {
+        background: linear-gradient(45deg, #ffd700, #ffed4e);
+        color: #7c2d12;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        display: inline-block;
+    }
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-hero">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">
+                    <i class="fas fa-chart-line mr-3"></i>My Analytics
+                </h1>
+                <p class="text-xl opacity-90">Your personal platform insights and activity</p>
+                <span class="premium-badge mt-2">
+                    <i class="fas fa-crown mr-1"></i>Premium Feature
+                </span>
+            </div>
+            <div class="text-right">
+                <div class="text-2xl font-bold">{{ user.get_full_name|default:user.username }}</div>
+                <div class="opacity-75">Member since {{ user.date_joined|date:"M Y" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4">
+    <!-- Personal Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="stat-card">
+            <div class="stat-number">{{ user_metrics.total_sessions|default:0 }}</div>
+            <div class="stat-label">Total Sessions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ user_metrics.total_page_views|default:0 }}</div>
+            <div class="stat-label">Page Views</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ user_metrics.tools_viewed|default:0 }}</div>
+            <div class="stat-label">Tools Explored</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ user_metrics.bookmarks_added|default:0 }}</div>
+            <div class="stat-label">Items Bookmarked</div>
+        </div>
+    </div>
+
+    <!-- Charts and Insights -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Activity Timeline -->
+        <div class="chart-container">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">
+                <i class="fas fa-chart-area mr-2 text-indigo-600"></i>Activity Timeline
+            </h3>
+            <canvas id="activityChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Content Preferences -->
+        <div class="chart-container">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">
+                <i class="fas fa-pie-chart mr-2 text-purple-600"></i>Content Preferences
+            </h3>
+            <canvas id="preferencesChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Detailed Insights -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Personal Insights -->
+        <div class="lg:col-span-2">
+            <div class="insight-card">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">
+                    <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>Personal Insights
+                </h3>
+                
+                <div class="space-y-4">
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle text-blue-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="text-sm font-medium text-blue-800">Most Active Time</h4>
+                                <p class="text-sm text-blue-700">
+                                    {% if personal_insights.peak_activity_hours %}
+                                        You're most active around {{ personal_insights.peak_activity_hours.0.hour|date:"g A" }}
+                                    {% else %}
+                                        We're still learning your activity patterns
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-heart text-green-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="text-sm font-medium text-green-800">Favorite Content</h4>
+                                <p class="text-sm text-green-700">
+                                    {% if personal_insights.content_preferences %}
+                                        You engage most with {{ personal_insights.content_preferences.0.event_type|title }} content
+                                    {% else %}
+                                        Explore more to see your preferences!
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-50 border-l-4 border-purple-400 p-4 rounded">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-trophy text-purple-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="text-sm font-medium text-purple-800">Engagement Level</h4>
+                                <p class="text-sm text-purple-700">
+                                    You spend an average of {{ user_metrics.total_time_on_site|default:0|floatformat:0 }} seconds per session
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div>
+            <div class="insight-card">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">
+                    <i class="fas fa-clock mr-2 text-green-500"></i>Recent Activity
+                </h3>
+                
+                <div class="space-y-3">
+                    {% for engagement in content_engagement %}
+                    <div class="activity-item">
+                        <div class="activity-icon bg-indigo-100 text-indigo-600">
+                            {% if engagement.event_type == 'tool_view' %}
+                                <i class="fas fa-tools"></i>
+                            {% elif engagement.event_type == 'article_view' %}
+                                <i class="fas fa-newspaper"></i>
+                            {% elif engagement.event_type == 'bookmark_add' %}
+                                <i class="fas fa-bookmark"></i>
+                            {% else %}
+                                <i class="fas fa-eye"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900">{{ engagement.event_type|title|replace:"_":" " }}</div>
+                            <div class="text-sm text-gray-500">{{ engagement.count }} times</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-chart-line text-4xl mb-4 opacity-50"></i>
+                        <p>Start exploring to see your activity here!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals and Recommendations -->
+    <div class="insight-card mt-6">
+        <h3 class="text-xl font-bold mb-4 text-gray-800">
+            <i class="fas fa-target mr-2 text-red-500"></i>Goals & Recommendations
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
+                <div class="text-2xl mb-2">🎯</div>
+                <h4 class="font-semibold text-gray-800 mb-2">Explore More Tools</h4>
+                <p class="text-sm text-gray-600">Try 5 new tools this week to discover hidden gems</p>
+                <div class="mt-2 bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full" style="width: 60%"></div>
+                </div>
+            </div>
+
+            <div class="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
+                <div class="text-2xl mb-2">📚</div>
+                <h4 class="font-semibold text-gray-800 mb-2">Read Articles</h4>
+                <p class="text-sm text-gray-600">Stay updated with latest tech trends and insights</p>
+                <div class="mt-2 bg-gray-200 rounded-full h-2">
+                    <div class="bg-green-600 h-2 rounded-full" style="width: 40%"></div>
+                </div>
+            </div>
+
+            <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg">
+                <div class="text-2xl mb-2">🤝</div>
+                <h4 class="font-semibold text-gray-800 mb-2">Share & Engage</h4>
+                <p class="text-sm text-gray-600">Share your findings and connect with community</p>
+                <div class="mt-2 bg-gray-200 rounded-full h-2">
+                    <div class="bg-purple-600 h-2 rounded-full" style="width: 20%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Options -->
+    <div class="bg-gray-50 rounded-xl p-6 mt-6">
+        <h3 class="text-xl font-bold mb-4 text-gray-800">Export Your Data</h3>
+        <div class="flex flex-wrap gap-4">
+            <button onclick="exportPersonalData()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">
+                <i class="fas fa-download mr-2"></i>Export Analytics
+            </button>
+            <button onclick="generateReport()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+                <i class="fas fa-file-alt mr-2"></i>Generate Report
+            </button>
+            <a href="{% url 'users:preferences' %}" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                <i class="fas fa-cog mr-2"></i>Privacy Settings
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Activity Timeline Chart
+const activityData = [
+    {% for item in activity_timeline %}
+    {
+        day: "{{ item.day|date:'Y-m-d' }}",
+        events: {{ item.events }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+const activityCtx = document.getElementById('activityChart').getContext('2d');
+const activityChart = new Chart(activityCtx, {
+    type: 'line',
+    data: {
+        labels: activityData.map(item => new Date(item.day).toLocaleDateString()),
+        datasets: [{
+            label: 'Daily Activity',
+            data: activityData.map(item => item.events),
+            borderColor: '#4f46e5',
+            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Content Preferences Chart
+const preferencesData = [
+    {% for item in content_engagement %}
+    {
+        event_type: "{{ item.event_type }}",
+        count: {{ item.count }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+const preferencesCtx = document.getElementById('preferencesChart').getContext('2d');
+const preferencesChart = new Chart(preferencesCtx, {
+    type: 'doughnut',
+    data: {
+        labels: preferencesData.map(item => item.event_type.replace('_', ' ').toUpperCase()),
+        datasets: [{
+            data: preferencesData.map(item => item.count),
+            backgroundColor: [
+                '#4f46e5',
+                '#7c3aed',
+                '#ec4899',
+                '#f59e0b',
+                '#10b981'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Export Functions
+function exportPersonalData() {
+    // Implementation for personal data export
+    alert('Your analytics data export will be available shortly');
+}
+
+function generateReport() {
+    // Implementation for report generation
+    alert('Generating your personal analytics report...');
+}
+</script>
+{% endblock %}

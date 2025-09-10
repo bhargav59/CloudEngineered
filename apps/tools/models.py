@@ -51,7 +51,7 @@ class Category(TimeStampedModel, SlugModel):
         super().save(*args, **kwargs)
     
     def get_absolute_url(self):
-        return reverse('tools:category', kwargs={'slug': self.slug})
+        return reverse('tools:tool_list', kwargs={'category': self.slug})
     
     @property
     def tool_count(self):

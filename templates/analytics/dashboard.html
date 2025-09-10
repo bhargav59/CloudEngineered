@@ -1,0 +1,356 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Analytics Dashboard - CloudEngineered{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js" rel="stylesheet">
+<style>
+    .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-5px);
+    }
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    .metric-label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    .analytics-header {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        border-radius: 0 0 50px 50px;
+    }
+    .date-picker {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 10px;
+        color: white;
+        padding: 0.5rem 1rem;
+    }
+    .table-analytics {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    .table-analytics th {
+        background: #f8fafc;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        color: #374151;
+    }
+    .table-analytics td {
+        border: none;
+        padding: 1rem;
+        vertical-align: middle;
+    }
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: #e5e7eb;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #059669);
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-header">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">Analytics Dashboard</h1>
+                <p class="text-xl opacity-90">Comprehensive platform insights and metrics</p>
+            </div>
+            <div class="flex space-x-4">
+                <input type="date" class="date-picker" id="start-date" value="{{ date_range.start|date:'Y-m-d' }}">
+                <input type="date" class="date-picker" id="end-date" value="{{ date_range.end|date:'Y-m-d' }}">
+                <button onclick="updateDateRange()" class="bg-white text-indigo-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    Update
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4">
+    <!-- Key Metrics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="metric-card">
+            <div class="metric-value">{{ total_page_views|floatformat:0 }}</div>
+            <div class="metric-label">Total Page Views</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ unique_visitors|floatformat:0 }}</div>
+            <div class="metric-label">Unique Visitors</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ total_users|floatformat:0 }}</div>
+            <div class="metric-label">Registered Users</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ bounce_rate }}%</div>
+            <div class="metric-label">Bounce Rate</div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Traffic Overview -->
+        <div class="chart-container">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">Traffic Overview</h3>
+            <canvas id="trafficChart" width="400" height="200"></canvas>
+        </div>
+        
+        <!-- User Engagement -->
+        <div class="chart-container">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">User Engagement</h3>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Avg. Time on Site</span>
+                        <span>{{ user_engagement.avg_time_on_site|floatformat:0 }}s</span>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: 75%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Avg. Page Views</span>
+                        <span>{{ user_engagement.avg_page_views|floatformat:1 }}</span>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: 60%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Avg. Sessions</span>
+                        <span>{{ user_engagement.avg_sessions|floatformat:1 }}</span>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: 85%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Tables Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Popular Content -->
+        <div class="table-analytics">
+            <div class="p-6 border-b">
+                <h3 class="text-xl font-bold text-gray-800">Popular Content</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Content</th>
+                            <th class="text-right">Views</th>
+                            <th class="text-right">Engagement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for content in popular_content %}
+                        <tr class="border-b border-gray-100">
+                            <td>
+                                <div class="font-medium text-gray-900">{{ content.content_object.title|default:content.content_object.name|truncatechars:40 }}</div>
+                                <div class="text-sm text-gray-500">{{ content.content_type.name|title }}</div>
+                            </td>
+                            <td class="text-right font-semibold">{{ content.views }}</td>
+                            <td class="text-right">
+                                <span class="text-green-600">{{ content.average_time_on_page|floatformat:0 }}s</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-gray-500 py-8">No data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Traffic Sources -->
+        <div class="table-analytics">
+            <div class="p-6 border-b">
+                <h3 class="text-xl font-bold text-gray-800">Traffic Sources</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Source</th>
+                            <th class="text-right">Visitors</th>
+                            <th class="text-right">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for source in traffic_sources %}
+                        <tr class="border-b border-gray-100">
+                            <td>
+                                <div class="font-medium text-gray-900">{{ source.utm_source|default:"Direct" }}</div>
+                            </td>
+                            <td class="text-right font-semibold">{{ source.count }}</td>
+                            <td class="text-right">
+                                <span class="text-blue-600">{{ source.percentage|floatformat:1 }}%</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-gray-500 py-8">No data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Insights -->
+    <div class="chart-container">
+        <h3 class="text-xl font-bold mb-4 text-gray-800">Top Search Queries</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for query in search_insights %}
+            <div class="bg-gray-50 rounded-lg p-4">
+                <div class="font-medium text-gray-900 mb-2">{{ query.normalized_query }}</div>
+                <div class="flex justify-between text-sm text-gray-600">
+                    <span>{{ query.count }} searches</span>
+                    <span>{{ query.avg_results|floatformat:0 }} avg results</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-3 text-center text-gray-500 py-8">No search data available</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl p-6 shadow-lg">
+        <h3 class="text-xl font-bold mb-4 text-gray-800">Quick Actions</h3>
+        <div class="flex flex-wrap gap-4">
+            <a href="{% url 'analytics:reports' %}" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">
+                <i class="fas fa-chart-line mr-2"></i>Detailed Reports
+            </a>
+            <a href="{% url 'analytics:api_realtime' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+                <i class="fas fa-broadcast-tower mr-2"></i>Real-time Data
+            </a>
+            <button onclick="exportData()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                <i class="fas fa-download mr-2"></i>Export Data
+            </button>
+            <button onclick="scheduleReport()" class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition">
+                <i class="fas fa-calendar mr-2"></i>Schedule Report
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Traffic Overview Chart
+const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+const trafficChart = new Chart(trafficCtx, {
+    type: 'line',
+    data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+            label: 'Page Views',
+            data: [120, 190, 300, 500, 200, 300, 450],
+            borderColor: '#4f46e5',
+            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: '#f3f4f6'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// Date Range Update
+function updateDateRange() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    
+    if (startDate && endDate) {
+        window.location.href = `?start_date=${startDate}&end_date=${endDate}`;
+    }
+}
+
+// Export Data
+function exportData() {
+    // Implementation for data export
+    alert('Export functionality will be implemented');
+}
+
+// Schedule Report
+function scheduleReport() {
+    // Implementation for report scheduling
+    alert('Report scheduling functionality will be implemented');
+}
+
+// Real-time updates
+function updateRealTimeData() {
+    fetch('/analytics/api/realtime/')
+        .then(response => response.json())
+        .then(data => {
+            // Update real-time metrics
+            console.log('Real-time data:', data);
+        })
+        .catch(error => console.error('Error fetching real-time data:', error));
+}
+
+// Update real-time data every 30 seconds
+setInterval(updateRealTimeData, 30000);
+</script>
+{% endblock %}

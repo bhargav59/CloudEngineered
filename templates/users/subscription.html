@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Subscription - CloudEngineered{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Subscription Management</h1>
+                    <p class="text-gray-600 mt-2">Manage your CloudEngineered subscription and premium features.</p>
+                </div>
+                <a href="{% url 'users:dashboard' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Current Subscription Status -->
+        <div class="bg-white rounded-lg shadow mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">Current Subscription</h2>
+            </div>
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-lg bg-gradient-to-r 
+                            {% if subscription.plan == 'free' %}from-gray-400 to-gray-500
+                            {% elif subscription.plan == 'basic' %}from-blue-400 to-blue-500
+                            {% elif subscription.plan == 'pro' %}from-purple-400 to-purple-500
+                            {% else %}from-yellow-400 to-yellow-500{% endif %} 
+                            flex items-center justify-center">
+                            <i class="fas fa-
+                                {% if subscription.plan == 'free' %}user
+                                {% elif subscription.plan == 'basic' %}star
+                                {% elif subscription.plan == 'pro' %}crown
+                                {% else %}gem{% endif %} text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-900">{{ subscription.get_plan_display }}</h3>
+                            <p class="text-gray-500">
+                                {% if subscription.plan == 'free' %}
+                                    Free access to basic features
+                                {% else %}
+                                    Active since {{ subscription.start_date|date:"M d, Y" }}
+                                    {% if subscription.end_date %}
+                                        • Expires {{ subscription.end_date|date:"M d, Y" }}
+                                    {% endif %}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if subscription.is_premium %}
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Active
+                            </span>
+                            {% if subscription.auto_renew %}
+                                <p class="text-sm text-gray-500 mt-1">Auto-renewal enabled</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if subscription.next_payment_date %}
+                    <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-alt text-blue-500 mr-2"></i>
+                            <span class="text-sm text-blue-800">
+                                Next payment: {{ subscription.next_payment_date|date:"M d, Y" }}
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Available Plans -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Available Plans</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Free Plan -->
+                <div class="bg-white rounded-lg shadow border-2 {% if subscription.plan == 'free' %}border-blue-500{% else %}border-gray-200{% endif %}">
+                    <div class="p-6">
+                        <div class="text-center">
+                            <h3 class="text-lg font-semibold text-gray-900">Free</h3>
+                            <p class="text-3xl font-bold text-gray-900 mt-2">$0</p>
+                            <p class="text-sm text-gray-500">forever</p>
+                        </div>
+                        <ul class="mt-6 space-y-3">
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Basic tool reviews
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Community articles
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Basic bookmarks
+                            </li>
+                            <li class="flex items-center text-sm text-gray-400">
+                                <i class="fas fa-times text-gray-400 mr-2"></i>
+                                Advanced comparisons
+                            </li>
+                            <li class="flex items-center text-sm text-gray-400">
+                                <i class="fas fa-times text-gray-400 mr-2"></i>
+                                Premium content
+                            </li>
+                        </ul>
+                        {% if subscription.plan == 'free' %}
+                            <button disabled class="w-full mt-6 px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed">
+                                Current Plan
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Basic Premium Plan -->
+                <div class="bg-white rounded-lg shadow border-2 {% if subscription.plan == 'basic' %}border-blue-500{% else %}border-gray-200{% endif %}">
+                    <div class="p-6">
+                        <div class="text-center">
+                            <h3 class="text-lg font-semibold text-gray-900">Basic Premium</h3>
+                            <p class="text-3xl font-bold text-gray-900 mt-2">$9</p>
+                            <p class="text-sm text-gray-500">per month</p>
+                        </div>
+                        <ul class="mt-6 space-y-3">
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Everything in Free
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Advanced tool comparisons
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Premium articles
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Advanced bookmarks
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Email support
+                            </li>
+                        </ul>
+                        {% if subscription.plan == 'basic' %}
+                            <button disabled class="w-full mt-6 px-4 py-2 bg-blue-500 text-white rounded-md cursor-not-allowed">
+                                Current Plan
+                            </button>
+                        {% else %}
+                            <button onclick="selectPlan('basic')" class="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                Select Plan
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Professional Plan -->
+                <div class="bg-white rounded-lg shadow border-2 {% if subscription.plan == 'pro' %}border-purple-500{% else %}border-gray-200{% endif %} relative">
+                    <!-- Popular Badge -->
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                            Most Popular
+                        </span>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-center">
+                            <h3 class="text-lg font-semibold text-gray-900">Professional</h3>
+                            <p class="text-3xl font-bold text-gray-900 mt-2">$19</p>
+                            <p class="text-sm text-gray-500">per month</p>
+                        </div>
+                        <ul class="mt-6 space-y-3">
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Everything in Basic
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                AI-powered recommendations
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Exclusive expert reviews
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Advanced analytics
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Priority support
+                            </li>
+                        </ul>
+                        {% if subscription.plan == 'pro' %}
+                            <button disabled class="w-full mt-6 px-4 py-2 bg-purple-500 text-white rounded-md cursor-not-allowed">
+                                Current Plan
+                            </button>
+                        {% else %}
+                            <button onclick="selectPlan('pro')" class="w-full mt-6 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
+                                Select Plan
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="bg-white rounded-lg shadow border-2 {% if subscription.plan == 'enterprise' %}border-yellow-500{% else %}border-gray-200{% endif %}">
+                    <div class="p-6">
+                        <div class="text-center">
+                            <h3 class="text-lg font-semibold text-gray-900">Enterprise</h3>
+                            <p class="text-3xl font-bold text-gray-900 mt-2">$49</p>
+                            <p class="text-sm text-gray-500">per month</p>
+                        </div>
+                        <ul class="mt-6 space-y-3">
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Everything in Pro
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Custom tool requests
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Team collaboration
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                API access
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Dedicated support
+                            </li>
+                        </ul>
+                        {% if subscription.plan == 'enterprise' %}
+                            <button disabled class="w-full mt-6 px-4 py-2 bg-yellow-500 text-white rounded-md cursor-not-allowed">
+                                Current Plan
+                            </button>
+                        {% else %}
+                            <button onclick="selectPlan('enterprise')" class="w-full mt-6 px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
+                                Contact Sales
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Features Available -->
+        {% if subscription.is_premium %}
+            <div class="bg-white rounded-lg shadow mb-8">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Your Premium Features</h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-star text-yellow-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-900">Advanced Tool Comparisons</h3>
+                                <p class="text-sm text-gray-500">Side-by-side detailed comparisons with expert insights.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-robot text-blue-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-900">AI-Powered Recommendations</h3>
+                                <p class="text-sm text-gray-500">Personalized tool suggestions based on your preferences.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-shield-alt text-green-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-900">Exclusive Content</h3>
+                                <p class="text-sm text-gray-500">Access to premium articles and expert reviews.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-headset text-purple-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-900">Priority Support</h3>
+                                <p class="text-sm text-gray-500">Get help faster with priority customer support.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Billing History -->
+        {% if subscription.is_premium %}
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Billing History</h2>
+                </div>
+                <div class="p-6">
+                    {% if subscription.last_payment_date %}
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ subscription.get_plan_display }} Plan</p>
+                                    <p class="text-sm text-gray-500">{{ subscription.last_payment_date|date:"M d, Y" }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-medium text-gray-900">
+                                        {% if subscription.plan == 'basic' %}$9.00
+                                        {% elif subscription.plan == 'pro' %}$19.00
+                                        {% else %}$49.00{% endif %}
+                                    </p>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Paid
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500">No billing history available yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function selectPlan(planType) {
+    if (planType === 'enterprise') {
+        // Redirect to contact page for enterprise
+        alert('Please contact our sales team for Enterprise pricing and setup.');
+        return;
+    }
+    
+    // In a real implementation, this would integrate with a payment processor like Stripe
+    alert(`Upgrading to ${planType} plan. This would integrate with a payment processor in production.`);
+}
+</script>
+{% endblock %}

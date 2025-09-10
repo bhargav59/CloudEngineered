@@ -16,12 +16,14 @@ urlpatterns = [
     path('', include('apps.core.urls')),
     
     # User management and authentication
+    path('accounts/', include('django.contrib.auth.urls')),  # Basic Django auth URLs
     # path('accounts/', include('allauth.urls')),  # Commented out until allauth is installed
     path('users/', include('apps.users.urls')),
     
     # Main application URLs
     path('tools/', include('apps.tools.urls')),
     path('content/', include('apps.content.urls')),
+    path('analytics/', include('apps.analytics.urls')),
     path('api/', include('apps.api.urls')),
     
     # SEO and utilities

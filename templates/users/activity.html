@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Activity - CloudEngineered{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Activity History</h1>
+                    <p class="text-gray-600 mt-2">Track your engagement and discover new content based on your interests.</p>
+                </div>
+                <a href="{% url 'users:dashboard' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Activity Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-eye text-white text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Tools Viewed</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ activity_stats.tools_viewed|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-bookmark text-white text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Items Bookmarked</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ activity_stats.bookmarks_created|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-newspaper text-white text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Articles Read</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ activity_stats.articles_read|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar text-white text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Days Active</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ activity_stats.days_active|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Filter -->
+        <div class="bg-white rounded-lg shadow mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">Filter Activity</h2>
+            </div>
+            <div class="p-6">
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="filterActivity('all')" class="activity-filter-btn active px-4 py-2 text-sm font-medium rounded-md border">
+                        All Activity
+                    </button>
+                    <button onclick="filterActivity('tools')" class="activity-filter-btn px-4 py-2 text-sm font-medium rounded-md border">
+                        <i class="fas fa-tools mr-1"></i>
+                        Tools
+                    </button>
+                    <button onclick="filterActivity('articles')" class="activity-filter-btn px-4 py-2 text-sm font-medium rounded-md border">
+                        <i class="fas fa-newspaper mr-1"></i>
+                        Articles
+                    </button>
+                    <button onclick="filterActivity('bookmarks')" class="activity-filter-btn px-4 py-2 text-sm font-medium rounded-md border">
+                        <i class="fas fa-bookmark mr-1"></i>
+                        Bookmarks
+                    </button>
+                    <button onclick="filterActivity('comparisons')" class="activity-filter-btn px-4 py-2 text-sm font-medium rounded-md border">
+                        <i class="fas fa-balance-scale mr-1"></i>
+                        Comparisons
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Timeline -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">Recent Activity</h2>
+            </div>
+            <div class="p-6">
+                <div class="flow-root">
+                    <ul class="-mb-8" id="activity-timeline">
+                        <!-- Sample activity items - in a real implementation, this would be populated from the database -->
+                        <li class="activity-item" data-type="tools">
+                            <div class="relative pb-8">
+                                <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                <div class="relative flex space-x-3">
+                                    <div>
+                                        <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+                                            <i class="fas fa-tools text-white text-xs"></i>
+                                        </span>
+                                    </div>
+                                    <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">
+                                                Viewed <a href="#" class="font-medium text-gray-900">Docker</a> tool details
+                                            </p>
+                                        </div>
+                                        <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                            <time datetime="2024-01-15">2 hours ago</time>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="activity-item" data-type="bookmarks">
+                            <div class="relative pb-8">
+                                <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                <div class="relative flex space-x-3">
+                                    <div>
+                                        <span class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
+                                            <i class="fas fa-bookmark text-white text-xs"></i>
+                                        </span>
+                                    </div>
+                                    <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">
+                                                Bookmarked <a href="#" class="font-medium text-gray-900">Kubernetes Best Practices</a> article
+                                            </p>
+                                        </div>
+                                        <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                            <time datetime="2024-01-15">4 hours ago</time>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="activity-item" data-type="articles">
+                            <div class="relative pb-8">
+                                <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                <div class="relative flex space-x-3">
+                                    <div>
+                                        <span class="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center ring-8 ring-white">
+                                            <i class="fas fa-newspaper text-white text-xs"></i>
+                                        </span>
+                                    </div>
+                                    <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">
+                                                Read <a href="#" class="font-medium text-gray-900">Cloud Security Guide 2024</a>
+                                            </p>
+                                        </div>
+                                        <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                            <time datetime="2024-01-15">6 hours ago</time>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="activity-item" data-type="comparisons">
+                            <div class="relative pb-8">
+                                <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                <div class="relative flex space-x-3">
+                                    <div>
+                                        <span class="h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center ring-8 ring-white">
+                                            <i class="fas fa-balance-scale text-white text-xs"></i>
+                                        </span>
+                                    </div>
+                                    <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">
+                                                Compared <a href="#" class="font-medium text-gray-900">AWS vs Azure vs Google Cloud</a>
+                                            </p>
+                                        </div>
+                                        <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                            <time datetime="2024-01-15">1 day ago</time>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="activity-item" data-type="tools">
+                            <div class="relative pb-8">
+                                <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                <div class="relative flex space-x-3">
+                                    <div>
+                                        <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+                                            <i class="fas fa-tools text-white text-xs"></i>
+                                        </span>
+                                    </div>
+                                    <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">
+                                                Viewed <a href="#" class="font-medium text-gray-900">Terraform</a> tool details
+                                            </p>
+                                        </div>
+                                        <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                            <time datetime="2024-01-14">2 days ago</time>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="activity-item" data-type="articles">
+                            <div class="relative">
+                                <div class="relative flex space-x-3">
+                                    <div>
+                                        <span class="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center ring-8 ring-white">
+                                            <i class="fas fa-newspaper text-white text-xs"></i>
+                                        </span>
+                                    </div>
+                                    <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">
+                                                Read <a href="#" class="font-medium text-gray-900">DevOps Trends for 2024</a>
+                                            </p>
+                                        </div>
+                                        <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                            <time datetime="2024-01-13">3 days ago</time>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Load More Button -->
+                <div class="mt-8 text-center">
+                    <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <i class="fas fa-chevron-down mr-2"></i>
+                        Load More Activity
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations Based on Activity -->
+        {% if subscription.is_premium %}
+            <div class="mt-8 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-purple-200">
+                    <h2 class="text-lg font-medium text-gray-900 flex items-center">
+                        <i class="fas fa-sparkles text-purple-500 mr-2"></i>
+                        AI-Powered Recommendations
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <p class="text-gray-600 mb-4">Based on your recent activity, here are some recommendations:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white rounded-lg p-4 border border-purple-200">
+                            <h3 class="font-medium text-gray-900 mb-2">
+                                <i class="fas fa-tools text-blue-500 mr-1"></i>
+                                Try Jenkins
+                            </h3>
+                            <p class="text-sm text-gray-600">Since you've been exploring Docker and Kubernetes, Jenkins might interest you for CI/CD automation.</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 border border-purple-200">
+                            <h3 class="font-medium text-gray-900 mb-2">
+                                <i class="fas fa-newspaper text-purple-500 mr-1"></i>
+                                Container Orchestration Guide
+                            </h3>
+                            <p class="text-sm text-gray-600">Deep dive into container orchestration patterns and best practices.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.activity-filter-btn {
+    color: #374151;
+    background-color: white;
+    border-color: #d1d5db;
+}
+
+.activity-filter-btn:hover {
+    background-color: #f9fafb;
+}
+
+.activity-filter-btn.active {
+    color: #1d4ed8;
+    background-color: #eff6ff;
+    border-color: #93c5fd;
+}
+</style>
+
+<script>
+function filterActivity(type) {
+    // Update active button
+    document.querySelectorAll('.activity-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Filter activity items
+    const items = document.querySelectorAll('.activity-item');
+    items.forEach(item => {
+        if (type === 'all' || item.dataset.type === type) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

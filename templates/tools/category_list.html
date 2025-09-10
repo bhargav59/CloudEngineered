@@ -34,7 +34,7 @@
                     </div>
                     <p class="text-gray-600 mb-4">{{ category.description }}</p>
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">{{ category.tool_count }} tool{{ category.tool_count|pluralize }}</span>
+                        <span class="text-sm text-gray-500">{{ category.tools_count }} tool{{ category.tools_count|pluralize }}</span>
                         <a href="{% url 'tools:tool_list' category=category.slug %}" 
                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                             Explore Tools
@@ -65,7 +65,7 @@
                     </div>
                     <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ category.description }}</p>
                     <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">{{ category.tool_count }} tool{{ category.tool_count|pluralize }}</span>
+                        <span class="text-gray-500">{{ category.tools_count }} tool{{ category.tools_count|pluralize }}</span>
                         {% if category.is_featured %}
                         <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Featured</span>
                         {% endif %}

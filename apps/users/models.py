@@ -93,11 +93,6 @@ class UserProfile(TimeStampedModel):
     
     # Personalization
     favorite_categories = models.JSONField(default=list)
-    # bookmarked_tools = models.ManyToManyField(
-    #     'tools.Tool', 
-    #     blank=True, 
-    #     related_name='bookmarked_by'
-    # )
     
     class Meta:
         verbose_name = 'User Profile'
@@ -151,3 +146,175 @@ class UserActivity(TimeStampedModel):
     
     def __str__(self):
         return f"{self.user.username} - {self.get_activity_type_display()}"
+
+
+class UserBookmark(TimeStampedModel):
+    """
+    User bookmarks for tools and articles.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookmarks')
+    content_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('tool', 'Tool'),
+            ('article', 'Article'),
+            ('comparison', 'Tool Comparison'),
+        ]
+    )
+    object_id = models.PositiveIntegerField()
+    notes = models.TextField(blank=True, help_text="Personal notes about this bookmark")
+    tags = models.JSONField(default=list, help_text="Personal tags for organization")
+    
+    class Meta:
+        verbose_name = 'User Bookmark'
+        verbose_name_plural = 'User Bookmarks'
+        unique_together = ['user', 'content_type', 'object_id']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.content_type} #{self.object_id}"
+
+
+class UserPreferences(TimeStampedModel):
+    """
+    User preferences and settings.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='preferences')
+    
+    # Dashboard preferences
+    dashboard_layout = models.CharField(
+        max_length=20,
+        choices=[
+            ('grid', 'Grid View'),
+            ('list', 'List View'),
+            ('cards', 'Card View'),
+        ],
+        default='cards'
+    )
+    items_per_page = models.PositiveIntegerField(default=20)
+    
+    # Content preferences
+    preferred_tool_categories = models.JSONField(default=list)
+    content_difficulty = models.CharField(
+        max_length=20,
+        choices=[
+            ('beginner', 'Beginner'),
+            ('intermediate', 'Intermediate'),
+            ('advanced', 'Advanced'),
+            ('all', 'All Levels'),
+        ],
+        default='all'
+    )
+    
+    # Notification preferences
+    email_frequency = models.CharField(
+        max_length=20,
+        choices=[
+            ('daily', 'Daily'),
+            ('weekly', 'Weekly'),
+            ('monthly', 'Monthly'),
+            ('never', 'Never'),
+        ],
+        default='weekly'
+    )
+    notify_new_tools = models.BooleanField(default=True)
+    notify_tool_updates = models.BooleanField(default=True)
+    notify_new_articles = models.BooleanField(default=True)
+    notify_comments = models.BooleanField(default=True)
+    
+    # Privacy settings
+    profile_visibility = models.CharField(
+        max_length=20,
+        choices=[
+            ('public', 'Public'),
+            ('authenticated', 'Authenticated Users Only'),
+            ('private', 'Private'),
+        ],
+        default='public'
+    )
+    show_activity = models.BooleanField(default=True)
+    show_bookmarks = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = 'User Preferences'
+        verbose_name_plural = 'User Preferences'
+    
+    def __str__(self):
+        return f"{self.user.username}'s Preferences"
+
+
+class PremiumFeature(TimeStampedModel):
+    """
+    Define premium features available to subscribers.
+    """
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField()
+    feature_key = models.CharField(max_length=50, unique=True)
+    is_active = models.BooleanField(default=True)
+    required_plan = models.CharField(
+        max_length=20,
+        choices=[
+            ('basic', 'Basic Premium'),
+            ('pro', 'Professional'),
+            ('enterprise', 'Enterprise'),
+        ],
+        default='basic'
+    )
+    
+    class Meta:
+        verbose_name = 'Premium Feature'
+        verbose_name_plural = 'Premium Features'
+    
+    def __str__(self):
+        return self.name
+
+
+class UserSubscription(TimeStampedModel):
+    """
+    Track user subscription details.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')
+    
+    SUBSCRIPTION_PLANS = [
+        ('free', 'Free'),
+        ('basic', 'Basic Premium'),
+        ('pro', 'Professional'),
+        ('enterprise', 'Enterprise'),
+    ]
+    
+    plan = models.CharField(max_length=20, choices=SUBSCRIPTION_PLANS, default='free')
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    auto_renew = models.BooleanField(default=True)
+    
+    # Payment information (for future integration)
+    stripe_subscription_id = models.CharField(max_length=100, blank=True)
+    last_payment_date = models.DateTimeField(null=True, blank=True)
+    next_payment_date = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        verbose_name = 'User Subscription'
+        verbose_name_plural = 'User Subscriptions'
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.get_plan_display()}"
+    
+    @property
+    def is_premium(self):
+        """Check if user has any premium plan."""
+        return self.plan != 'free' and self.is_active
+    
+    def has_feature(self, feature_key):
+        """Check if user's plan includes a specific feature."""
+        if not self.is_premium:
+            return False
+        
+        try:
+            feature = PremiumFeature.objects.get(feature_key=feature_key, is_active=True)
+            plan_hierarchy = ['basic', 'pro', 'enterprise']
+            user_plan_level = plan_hierarchy.index(self.plan)
+            required_plan_level = plan_hierarchy.index(feature.required_plan)
+            return user_plan_level >= required_plan_level
+        except (PremiumFeature.DoesNotExist, ValueError):
+            return False
