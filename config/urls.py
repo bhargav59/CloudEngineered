@@ -26,6 +26,9 @@ urlpatterns = [
     path('analytics/', include('apps.analytics.urls')),
     path('api/', include('apps.api.urls')),
     
+    # AI Content Generation
+    path('api/ai/', include('apps.ai.urls')),
+    
     # SEO and utilities
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     # path('health/', include('health_check.urls')),  # Commented out until health_check is installed
