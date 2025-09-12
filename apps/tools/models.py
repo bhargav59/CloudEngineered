@@ -223,7 +223,7 @@ class Tool(TimeStampedModel, SlugModel, SEOModel, PublishableModel, ViewCountMod
         super().save(*args, **kwargs)
     
     def get_absolute_url(self):
-        return reverse('tools:detail', kwargs={'slug': self.slug})
+        return reverse('tools:tool_detail', kwargs={'category': self.category.slug, 'slug': self.slug})
     
     @property
     def github_repo_name(self):
