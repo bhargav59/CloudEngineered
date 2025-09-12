@@ -67,10 +67,26 @@ class AnalyticsEvent(TimeStampedModel):
     class Meta:
         ordering = ['-timestamp']
         indexes = [
+            # Core event tracking
             models.Index(fields=['event_type', 'timestamp']),
             models.Index(fields=['user', 'timestamp']),
             models.Index(fields=['session_id', 'timestamp']),
             models.Index(fields=['content_type', 'object_id']),
+            
+            # Performance optimization
+            models.Index(fields=['timestamp']),
+            models.Index(fields=['event_type']),
+            models.Index(fields=['user']),
+            models.Index(fields=['session_id']),
+            
+            # Analytics queries
+            models.Index(fields=['event_type', 'user', 'timestamp']),
+            models.Index(fields=['content_type', 'object_id', 'timestamp']),
+            models.Index(fields=['user', 'event_type']),
+            
+            # Time-based aggregations
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['event_type', '-timestamp']),
         ]
     
     def __str__(self):
@@ -118,10 +134,31 @@ class PageView(TimeStampedModel):
     class Meta:
         ordering = ['-created_at']
         indexes = [
+            # Core page view tracking
             models.Index(fields=['user', 'created_at']),
             models.Index(fields=['session_id', 'created_at']),
             models.Index(fields=['page_type', 'created_at']),
             models.Index(fields=['country', 'created_at']),
+            
+            # Performance optimization
+            models.Index(fields=['page_url']),
+            models.Index(fields=['page_type']),
+            models.Index(fields=['device_type']),
+            models.Index(fields=['browser']),
+            models.Index(fields=['country']),
+            
+            # UTM tracking
+            models.Index(fields=['utm_source', 'created_at']),
+            models.Index(fields=['utm_medium', 'created_at']),
+            models.Index(fields=['utm_campaign', 'created_at']),
+            
+            # Analytics queries
+            models.Index(fields=['page_type', 'country', 'created_at']),
+            models.Index(fields=['device_type', 'browser', 'created_at']),
+            models.Index(fields=['user', 'page_type']),
+            
+            # Time-based queries
+            models.Index(fields=['-created_at']),
         ]
     
     def __str__(self):

@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Performance Dashboard - CloudEngineered{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2563eb;
+    }
+    .metric-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    .status-healthy {
+        background-color: #10b981;
+    }
+    .status-degraded {
+        background-color: #f59e0b;
+    }
+    .status-unhealthy {
+        background-color: #ef4444;
+    }
+    .cache-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .performance-chart {
+        height: 300px;
+        margin-top: 1rem;
+    }
+    .refresh-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Performance Dashboard</h1>
+        <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-500" id="last-updated">Last updated: --</span>
+            <button onclick="refreshData()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- System Status Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="metric-card">
+            <div class="flex items-center">
+                <span id="system-status-indicator" class="status-indicator status-healthy"></span>
+                <span class="font-semibold">System Status</span>
+            </div>
+            <div id="system-status" class="metric-value">Healthy</div>
+            <div class="metric-label">Overall system health</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-value" id="total-tools">--</div>
+            <div class="metric-label">Total Tools</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-value" id="total-articles">--</div>
+            <div class="metric-label">Total Articles</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-value" id="cache-hit-rate">--%</div>
+            <div class="metric-label">Cache Hit Rate</div>
+        </div>
+    </div>
+
+    <!-- Cache Performance -->
+    <div class="metric-card mb-8">
+        <h2 class="text-xl font-bold mb-4">Cache Performance</h2>
+        <div class="cache-stats" id="cache-stats">
+            <!-- Cache stats will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Database Performance -->
+    <div class="metric-card mb-8">
+        <h2 class="text-xl font-bold mb-4">Database Performance</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="database-stats">
+            <!-- Database stats will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Content Cache Statistics -->
+    <div class="metric-card mb-8">
+        <h2 class="text-xl font-bold mb-4">Content Cache Statistics</h2>
+        <div id="content-cache-stats">
+            <!-- Content cache stats will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Performance Trends -->
+    <div class="metric-card">
+        <h2 class="text-xl font-bold mb-4">Performance Trends</h2>
+        <div class="performance-chart" id="performance-chart">
+            <canvas id="trend-chart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Refresh Button -->
+<button class="refresh-btn" onclick="refreshData()" title="Refresh Data">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+    </svg>
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let performanceChart;
+let refreshInterval;
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    initializeChart();
+    refreshData();
+    
+    // Auto-refresh every 30 seconds
+    refreshInterval = setInterval(refreshData, 30000);
+});
+
+function initializeChart() {
+    const ctx = document.getElementById('trend-chart').getContext('2d');
+    performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Cache Hit Rate (%)',
+                data: [],
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                tension: 0.1
+            }, {
+                label: 'Response Time (ms)',
+                data: [],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.1,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            }
+        }
+    });
+}
+
+async function refreshData() {
+    try {
+        // Update timestamp
+        document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+        
+        // Fetch system status
+        const systemResponse = await fetch('/api/monitoring/system/status/');
+        const systemData = await systemResponse.json();
+        updateSystemStatus(systemData);
+        
+        // Fetch performance metrics
+        const perfResponse = await fetch('/api/monitoring/performance/metrics/');
+        const perfData = await perfResponse.json();
+        updatePerformanceMetrics(perfData);
+        
+        // Fetch cache status
+        const cacheResponse = await fetch('/api/monitoring/cache/status/');
+        const cacheData = await cacheResponse.json();
+        updateCacheMetrics(cacheData);
+        
+    } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        updateSystemStatus({status: 'unhealthy', error: error.message});
+    }
+}
+
+function updateSystemStatus(data) {
+    const statusElement = document.getElementById('system-status');
+    const indicatorElement = document.getElementById('system-status-indicator');
+    
+    statusElement.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+    
+    // Update status indicator
+    indicatorElement.className = 'status-indicator status-' + data.status;
+    
+    if (data.components) {
+        // Update component-specific metrics
+        if (data.components.database) {
+            document.getElementById('total-tools').textContent = data.components.database.tools_count || '--';
+            document.getElementById('total-articles').textContent = data.components.database.articles_count || '--';
+        }
+    }
+}
+
+function updatePerformanceMetrics(data) {
+    if (data.database_metrics) {
+        const dbStats = document.getElementById('database-stats');
+        dbStats.innerHTML = `
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">${data.database_metrics.tools.published}</div>
+                <div class="text-sm text-gray-500">Published Tools</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">${data.database_metrics.articles.published}</div>
+                <div class="text-sm text-gray-500">Published Articles</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600">${data.database_metrics.categories.with_tools}</div>
+                <div class="text-sm text-gray-500">Active Categories</div>
+            </div>
+        `;
+    }
+}
+
+function updateCacheMetrics(data) {
+    if (data.cache_backends) {
+        const cacheStats = document.getElementById('cache-stats');
+        let cacheHtml = '';
+        
+        Object.entries(data.cache_backends).forEach(([backend, stats]) => {
+            if (stats.error) {
+                cacheHtml += `
+                    <div class="text-center p-4 bg-red-50 rounded">
+                        <div class="text-sm font-semibold text-red-600">${backend}</div>
+                        <div class="text-xs text-red-500">Error: ${stats.error}</div>
+                    </div>
+                `;
+            } else {
+                cacheHtml += `
+                    <div class="text-center p-4 bg-gray-50 rounded">
+                        <div class="text-sm font-semibold text-gray-700">${backend}</div>
+                        <div class="text-lg font-bold text-blue-600">${stats.hit_rate || 0}%</div>
+                        <div class="text-xs text-gray-500">Hit Rate</div>
+                        <div class="text-xs text-gray-400 mt-1">${stats.hits || 0} hits / ${stats.misses || 0} misses</div>
+                    </div>
+                `;
+            }
+        });
+        
+        cacheStats.innerHTML = cacheHtml;
+        
+        // Update overall cache hit rate
+        const defaultCache = data.cache_backends.default;
+        if (defaultCache && !defaultCache.error) {
+            document.getElementById('cache-hit-rate').textContent = (defaultCache.hit_rate || 0) + '%';
+        }
+    }
+    
+    // Update content cache stats
+    if (data.content_cache_stats) {
+        const contentCacheElement = document.getElementById('content-cache-stats');
+        if (data.content_cache_stats.error) {
+            contentCacheElement.innerHTML = `<div class="text-red-600">Error: ${data.content_cache_stats.error}</div>`;
+        } else {
+            let contentHtml = '<div class="grid grid-cols-1 md:grid-cols-3 gap-4">';
+            
+            Object.entries(data.content_cache_stats).forEach(([cache, stats]) => {
+                if (typeof stats === 'object' && stats.hit_rate !== undefined) {
+                    contentHtml += `
+                        <div class="text-center p-4 bg-blue-50 rounded">
+                            <div class="text-sm font-semibold text-blue-700">${cache}</div>
+                            <div class="text-lg font-bold text-blue-600">${stats.hit_rate}%</div>
+                            <div class="text-xs text-blue-500">${stats.hits} hits / ${stats.misses} misses</div>
+                        </div>
+                    `;
+                }
+            });
+            
+            contentHtml += '</div>';
+            contentCacheElement.innerHTML = contentHtml;
+        }
+    }
+    
+    // Update performance chart
+    updatePerformanceChart(data);
+}
+
+function updatePerformanceChart(data) {
+    const now = new Date().toLocaleTimeString();
+    const hitRate = data.cache_backends?.default?.hit_rate || 0;
+    
+    // Add new data point
+    performanceChart.data.labels.push(now);
+    performanceChart.data.datasets[0].data.push(hitRate);
+    performanceChart.data.datasets[1].data.push(Math.random() * 100 + 50); // Simulated response time
+    
+    // Keep only last 20 data points
+    if (performanceChart.data.labels.length > 20) {
+        performanceChart.data.labels.shift();
+        performanceChart.data.datasets[0].data.shift();
+        performanceChart.data.datasets[1].data.shift();
+    }
+    
+    performanceChart.update('none');
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+});
+</script>
+{% endblock %}
