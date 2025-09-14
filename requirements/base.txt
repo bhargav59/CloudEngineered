@@ -57,7 +57,7 @@ whitenoise>=6.5.0
 
 # SEO and Meta Management
 django-meta>=2.2.0
-django-sitemap>=2.2.0
+# django-sitemap removed as it's not available on PyPI - use Django's built-in sitemap framework
 
 # Configuration Management
 python-decouple>=3.8
