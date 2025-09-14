@@ -10,12 +10,16 @@ from django.db.models import Q, Count
 from django.contrib import messages
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.views.decorators.http import require_http_methods
 from django.conf import settings
+from django.utils import timezone
+from django.core.cache import cache
 
 from apps.tools.models import Tool, Category
 from apps.content.models import Article
 from .models import SiteConfiguration, NewsletterSubscriber
 from .forms import NewsletterSubscriptionForm
+from .utils import CacheManager
 
 
 class HomeView(TemplateView):
@@ -294,3 +298,220 @@ def handler500(request):
     Custom 500 error handler.
     """
     return render(request, 'core/500.html', status=500)
+
+
+# Monitoring and Performance Views
+
+@require_http_methods(["GET"])
+def health_check(request):
+    """Basic health check endpoint."""
+    try:
+        # Test database connectivity
+        Tool.objects.count()
+        
+        # Test cache connectivity
+        test_key = f"health_check_{timezone.now().timestamp()}"
+        cache.set(test_key, "healthy", 30)
+        cache_healthy = cache.get(test_key) == "healthy"
+        cache.delete(test_key)
+        
+        status = {
+            'status': 'healthy' if cache_healthy else 'degraded',
+            'timestamp': timezone.now().isoformat(),
+            'database': 'healthy',
+            'cache': 'healthy' if cache_healthy else 'unhealthy'
+        }
+        
+        return JsonResponse(status)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': timezone.now().isoformat()
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def cache_status(request):
+    """Comprehensive cache status with content cache metrics."""
+    cache_manager = CacheManager()
+    
+    try:
+        from .content_cache import content_cache
+        cache_stats = content_cache.get_cache_statistics()
+    except Exception as e:
+        cache_stats = {'error': f"Content cache unavailable: {str(e)}"}
+    
+    # Get legacy cache stats
+    try:
+        default_stats = cache_manager.get_cache_stats('default')
+        ai_stats = cache_manager.get_cache_stats('ai_cache')
+        session_stats = cache_manager.get_cache_stats('session_cache')
+    except Exception as e:
+        default_stats = ai_stats = session_stats = {'error': str(e)}
+    
+    status = {
+        'status': 'healthy',
+        'cache_backends': {
+            'default': default_stats,
+            'ai_cache': ai_stats,
+            'session_cache': session_stats
+        },
+        'content_cache_stats': cache_stats,
+        'timestamp': timezone.now().isoformat()
+    }
+    
+    return JsonResponse(status)
+
+
+@require_http_methods(["GET"])
+def performance_metrics(request):
+    """Performance metrics and database query statistics."""
+    try:
+        # Database metrics
+        db_metrics = {
+            'tools': {
+                'total': Tool.objects.count(),
+                'published': Tool.objects.filter(is_published=True).count(),
+                'featured': Tool.objects.filter(is_featured=True).count()
+            },
+            'categories': {
+                'total': Category.objects.count(),
+                'with_tools': Category.objects.filter(tools__isnull=False).distinct().count()
+            },
+            'articles': {
+                'total': Article.objects.count(),
+                'published': Article.objects.filter(is_published=True).count()
+            }
+        }
+        
+        # Cache performance
+        cache_manager = CacheManager()
+        cache_metrics = {
+            'default': cache_manager.get_cache_stats('default'),
+            'ai_cache': cache_manager.get_cache_stats('ai_cache'),
+            'session_cache': cache_manager.get_cache_stats('session_cache')
+        }
+        
+        # Content cache performance
+        try:
+            from .content_cache import content_cache
+            content_metrics = content_cache.get_cache_statistics()
+        except Exception:
+            content_metrics = {'error': 'Content cache unavailable'}
+        
+        return JsonResponse({
+            'status': 'healthy',
+            'timestamp': timezone.now().isoformat(),
+            'database_metrics': db_metrics,
+            'cache_metrics': cache_metrics,
+            'content_cache_metrics': content_metrics
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'error': str(e),
+            'timestamp': timezone.now().isoformat()
+        }, status=500)
+
+
+@require_http_methods(["POST"])
+def warm_caches(request):
+    """Warm up critical caches."""
+    try:
+        cache_manager = CacheManager()
+        
+        # Warm content caches
+        warmed_content = cache_manager.warm_content_caches()
+        
+        # Warm basic test caches
+        warmed_basic = cache_manager.warm_cache("performance_test", 5)
+        
+        return JsonResponse({
+            'status': 'success',
+            'timestamp': timezone.now().isoformat(),
+            'warmed_caches': {
+                'content_caches': warmed_content,
+                'test_caches': warmed_basic
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'error': str(e),
+            'timestamp': timezone.now().isoformat()
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def system_status(request):
+    """Comprehensive system status dashboard."""
+    try:
+        # Database status
+        tools_count = Tool.objects.count()
+        articles_count = Article.objects.count()
+        categories_count = Category.objects.count()
+        
+        # Cache health
+        cache_manager = CacheManager()
+        default_cache = cache_manager.get_cache_stats('default')
+        ai_cache = cache_manager.get_cache_stats('ai_cache')
+        session_cache = cache_manager.get_cache_stats('session_cache')
+        
+        cache_health = not any([
+            'error' in default_cache,
+            'error' in ai_cache,
+            'error' in session_cache
+        ])
+        
+        # Content cache health
+        try:
+            from .content_cache import content_cache
+            content_cache_health = True
+            content_stats = content_cache.get_cache_statistics()
+        except Exception:
+            content_cache_health = False
+            content_stats = {'error': 'Content cache unavailable'}
+        
+        overall_status = 'healthy' if cache_health and content_cache_health else 'degraded'
+        
+        return JsonResponse({
+            'status': overall_status,
+            'timestamp': timezone.now().isoformat(),
+            'components': {
+                'database': {
+                    'status': 'healthy',
+                    'tools_count': tools_count,
+                    'articles_count': articles_count,
+                    'categories_count': categories_count
+                },
+                'cache': {
+                    'status': 'healthy' if cache_health else 'unhealthy',
+                    'backends': ['default', 'ai_cache', 'session_cache']
+                },
+                'content_cache': {
+                    'status': 'healthy' if content_cache_health else 'unhealthy',
+                    'stats': content_stats
+                }
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': timezone.now().isoformat()
+        }, status=500)
+
+
+class PerformanceDashboardView(TemplateView):
+    """Performance monitoring dashboard."""
+    template_name = 'monitoring/dashboard.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Add initial dashboard data
+        context['dashboard_title'] = 'Performance Dashboard'
+        context['refresh_interval'] = 30  # seconds
+        
+        return context

@@ -61,14 +61,15 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.core.throttling.RateLimitMiddleware',  # Rate limiting
+    'apps.core.middleware.PerformanceMonitoringMiddleware',  # Performance monitoring
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -107,24 +108,89 @@ DATABASES = {
     }
 }
 
-# Cache settings - Using local memory cache temporarily (switch to Redis in production)
+# Cache settings - Redis for production performance
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': config('REDIS_URL', default='redis://localhost:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_KWARGS': {
+                'max_connections': 50,
+                'retry_on_timeout': True,
+            },
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            'IGNORE_EXCEPTIONS': True,
+        },
+        'KEY_PREFIX': 'cloudengineered',
+        'TIMEOUT': 300,  # 5 minutes default
+    },
+    'ai_cache': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': config('REDIS_URL', default='redis://localhost:6379/2'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_KWARGS': {
+                'max_connections': 30,
+                'retry_on_timeout': True,
+            },
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            'IGNORE_EXCEPTIONS': True,
+        },
+        'KEY_PREFIX': 'ai',
+        'TIMEOUT': 3600,  # 1 hour for AI content
+    },
+    'session_cache': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': config('REDIS_URL', default='redis://localhost:6379/3'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_KWARGS': {
+                'max_connections': 20,
+                'retry_on_timeout': True,
+            },
+        },
+        'KEY_PREFIX': 'session',
+        'TIMEOUT': 86400,  # 24 hours for sessions
     }
 }
 
-# Redis cache configuration (commented out for development)
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django_redis.cache.RedisCache',
-#         'LOCATION': 'redis://localhost:6379/1',
-#         'OPTIONS': {
-#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#         }
-#     }
-# }
+# Cache configuration for different environments
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_SECONDS = 300
+CACHE_MIDDLEWARE_KEY_PREFIX = 'cloudengineered'
+
+# Cache timeout settings
+CACHE_TIMEOUTS = {
+    'tools': 1800,      # 30 minutes
+    'categories': 3600,  # 1 hour
+    'articles': 1200,    # 20 minutes
+    'ai_templates': 7200, # 2 hours
+    'ai_generations': 3600, # 1 hour
+    'user_stats': 900,   # 15 minutes
+    'search_results': 600, # 10 minutes
+}
+
+# Celery Configuration for Background Tasks
+CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = config('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True
+
+# Task routing for different queues
+CELERY_TASK_ROUTES = {
+    'apps.ai.tasks.*': {'queue': 'ai_tasks'},
+    'apps.analytics.tasks.*': {'queue': 'analytics'},
+    'apps.core.tasks.*': {'queue': 'general'},
+    'apps.tools.tasks.*': {'queue': 'tools'},
+}
+
+# Performance monitoring settings
+SLOW_REQUEST_THRESHOLD = 1.0  # Log requests slower than 1 second
+ENABLE_QUERY_DEBUGGING = True  # Will be overridden by environment-specific settings
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -219,7 +285,6 @@ CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # AI Service Configuration
