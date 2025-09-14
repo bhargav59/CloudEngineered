@@ -59,9 +59,9 @@ class ArticleListView(ListView):
         # Add filter options
         context['categories'] = Category.objects.all().order_by('name')
         context['article_types'] = Article.ARTICLE_TYPES
-        context['popular_tags'] = ContentTag.objects.annotate(
-            article_count=Count('articles', filter=Q(articles__is_published=True))
-        ).filter(article_count__gt=0).order_by('-article_count')[:10]
+        context['popular_tags'] = ContentTag.objects.filter(
+            usage_count__gt=0
+        ).order_by('-usage_count')[:10]
         
         # Current filters
         context['selected_category'] = self.request.GET.get('category')

@@ -182,10 +182,36 @@ class Tool(TimeStampedModel, SlugModel, SEOModel, PublishableModel, ViewCountMod
         verbose_name_plural = 'Tools'
         ordering = ['-created_at']
         indexes = [
+            # Publishing and visibility
             models.Index(fields=['category', 'is_published']),
             models.Index(fields=['is_featured', 'is_published']),
             models.Index(fields=['is_trending', 'is_published']),
+            models.Index(fields=['is_published', '-created_at']),
+            models.Index(fields=['is_published', '-view_count']),
+            models.Index(fields=['is_published', '-rating_sum']),
+            
+            # Performance optimization
             models.Index(fields=['view_count']),
+            models.Index(fields=['rating_sum']),
+            models.Index(fields=['rating_count']),
+            models.Index(fields=['status']),
+            models.Index(fields=['pricing_model']),
+            
+            # Search and filtering
+            models.Index(fields=['slug']),
+            models.Index(fields=['category', 'pricing_model']),
+            models.Index(fields=['category', 'status']),
+            models.Index(fields=['github_stars']),
+            
+            # Time-based queries
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['-updated_at']),
+            models.Index(fields=['-ai_last_updated']),
+            
+            # Composite indexes for common queries
+            models.Index(fields=['category', 'is_published', '-view_count']),
+            models.Index(fields=['is_featured', 'is_published', '-created_at']),
+            models.Index(fields=['is_trending', 'is_published', '-rating_sum']),
         ]
     
     def __str__(self):
@@ -197,7 +223,7 @@ class Tool(TimeStampedModel, SlugModel, SEOModel, PublishableModel, ViewCountMod
         super().save(*args, **kwargs)
     
     def get_absolute_url(self):
-        return reverse('tools:detail', kwargs={'slug': self.slug})
+        return reverse('tools:tool_detail', kwargs={'category': self.category.slug, 'slug': self.slug})
     
     @property
     def github_repo_name(self):
@@ -258,6 +284,15 @@ class ToolComparison(TimeStampedModel, SlugModel, SEOModel, PublishableModel, Vi
         verbose_name = 'Tool Comparison'
         verbose_name_plural = 'Tool Comparisons'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_published', '-created_at']),
+            models.Index(fields=['is_published', '-view_count']),
+            models.Index(fields=['slug']),
+            models.Index(fields=['author']),
+            models.Index(fields=['ai_generated']),
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['-updated_at']),
+        ]
     
     def __str__(self):
         return self.title
@@ -315,6 +350,18 @@ class ToolReview(TimeStampedModel, RatingModel):
         verbose_name_plural = 'Tool Reviews'
         ordering = ['-created_at']
         unique_together = ['tool', 'user']  # One review per user per tool
+        indexes = [
+            models.Index(fields=['tool', '-created_at']),
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['tool', 'rating']),
+            models.Index(fields=['tool', 'is_verified']),
+            models.Index(fields=['tool', 'is_featured']),
+            models.Index(fields=['rating']),
+            models.Index(fields=['is_verified']),
+            models.Index(fields=['is_featured']),
+            models.Index(fields=['helpful_count']),
+            models.Index(fields=['-created_at']),
+        ]
     
     def __str__(self):
         return f"{self.user.username} - {self.tool.name} ({self.rating}★)"
