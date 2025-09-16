@@ -1,11 +1,4 @@
-[phases.setup]
-nixPkgs = ['python311', 'pip', 'postgresql']
-
-[phases.install]
-cmds = [
-    'pip install -r requirements/production.txt'
-]
-
+# Nixpacks configuration for Railway deployment
 [phases.build]
 cmds = [
     'python manage.py collectstatic --noinput',
