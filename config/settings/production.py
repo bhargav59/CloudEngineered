@@ -1,15 +1,33 @@
 """
-Production settings for CloudEngineered platform.
+Production settings for CloudEngineered platform - Render deployment.
 """
 
 from .base import *
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
+import dj_database_url
+import os
 
 # Security
 DEBUG = False
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='cloudengineered.io', cast=Csv())
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',
+    '.cloudflareaccess.com',
+    # Add your custom domain here when ready
+    'yourdomain.com',
+    'www.yourdomain.com',
+]
+
+# CSRF trusted origins for Render and Cloudflare
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    # Add your custom domain here when ready
+    'https://yourdomain.com',
+    'https://www.yourdomain.com',
+]
 
 # Security Headers
 SECURE_BROWSER_XSS_FILTER = True
@@ -38,14 +56,54 @@ if config('USE_S3', default=False, cast=bool):
         'CacheControl': 'max-age=86400',
     }
 
-# Database connection pooling
-DATABASES['default'].update({
-    'CONN_MAX_AGE': 60,
-    'OPTIONS': {
-        'MAX_CONNS': 20,
-        'CONN_HEALTH_CHECKS': True,
+# Database Configuration for Render PostgreSQL
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
+
+# Redis Configuration for Render
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/1')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     }
-})
+}
+
+# Celery Configuration for Render
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
+# Static Files Configuration for Render
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Add WhiteNoise to middleware for static file serving
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add for static files
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.analytics.middleware.AnalyticsMiddleware',
+    'apps.core.middleware.PerformanceMiddleware',
+    'apps.core.seo_middleware.SEOMiddleware',
+]
 
 # Sentry Error Tracking
 if config('SENTRY_DSN', default=''):

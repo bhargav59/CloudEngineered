@@ -5,6 +5,10 @@ gunicorn>=21.0.0
 
 # Production Database
 psycopg2>=2.9.7
+dj-database-url>=2.1.0
+
+# Static file serving
+whitenoise>=6.6.0
 
 # Production Monitoring
 newrelic>=9.0.0
