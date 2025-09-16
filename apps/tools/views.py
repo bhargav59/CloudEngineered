@@ -13,9 +13,7 @@ class CategoryListView(ListView):
     context_object_name = 'categories'
     
     def get_queryset(self):
-        return Category.objects.filter(
-            is_active=True
-        ).annotate(
+        return Category.objects.annotate(
             tools_count=Count('tools', filter=Q(tools__is_published=True))
         ).order_by('sort_order', 'name')
     
