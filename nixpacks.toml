@@ -1,0 +1,19 @@
+[phases.setup]
+nixPkgs = ['python311', 'pip', 'postgresql']
+
+[phases.install]
+cmds = [
+    'pip install -r requirements/production.txt'
+]
+
+[phases.build]
+cmds = [
+    'python manage.py collectstatic --noinput',
+    'chmod +x start.sh'
+]
+
+[start]
+cmd = './start.sh'
+
+[variables]
+PYTHONPATH = '/app'
