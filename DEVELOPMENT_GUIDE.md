@@ -407,6 +407,64 @@ def tool_list(request):
    # Collect static files
    python manage.py collectstatic --clear
    ```
+### Static Files (CSS/JS) Not Loading
+
+If you find that your application is loading only plain HTML without any styling or JavaScript, it's likely an issue with how static files are configured or served. This is a common two-part problem in this project, especially when using the development server.
+
+#### Part 1: Compile Tailwind CSS
+
+The project uses Tailwind CSS, which needs to be "compiled" from its source format (with special syntax like `@apply`) into a standard CSS file that browsers can read.
+
+1.  **Check for a build script**: Look for a `package.json` file in your project root. It should contain a script to build the CSS, for example:
+    ```json
+    "scripts": {
+      "build:css": "tailwindcss -i ./static/src/input.css -o ./static/css/main.css --watch"
+    }
+    ```
+
+2.  **Install dependencies**: If you haven't already, run `npm install` in your project root to install Tailwind CSS and other Node.js dependencies.
+
+3.  **Run the build script**: In a separate terminal, run the build script. This command will typically watch for changes and rebuild your CSS automatically.
+    ```bash
+    npm run build:css
+    ```
+    This process should create or update the `static/css/main.css` file, which your HTML links to.
+
+#### Part 2: Configure Django to Serve Static Files
+
+Even with compiled CSS, Django's development server needs to know where to find it.
+
+1.  **Configure Static File Directories**: In your Django settings (likely in `config/settings/base.py`), ensure you have correctly defined `STATIC_URL` and `STATICFILES_DIRS`. `STATICFILES_DIRS` tells Django where to look for static files that aren't tied to a specific app.
+
+    ```python
+    # In your settings file (e.g., config/settings/base.py)
+    # This should be defined near the top of the file:
+    # BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+    STATIC_URL = 'static/'
+
+    # This tells Django to look for a `static` folder in your project's root directory.
+    # This configuration is already present in the project's base settings.
+    STATICFILES_DIRS = [
+        BASE_DIR / 'static',
+    ]
+    ```
+
+2.  **Update URL Configuration**: To ensure the development server can serve files when `DEBUG` is `True`, you can explicitly add the static URL patterns to your main `config/urls.py` file. The project is already set up this way, but it's good to understand how it works.
+
+    ```python
+    # In config/urls.py
+    from django.conf import settings
+    from django.conf.urls.static import static
+
+    # ... your other url patterns
+
+    if settings.DEBUG:
+        # This line is what allows the dev server to find and serve static files.
+        urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    ```
+
+After compiling the CSS and verifying the Django settings, restart your development server. The `collectstatic` command is for gathering files for a *production* deployment and is not needed for the development server.
 
 ### Debug Mode
 

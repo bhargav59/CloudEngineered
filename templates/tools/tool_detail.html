@@ -213,7 +213,7 @@
                                 <h4 class="font-semibold text-gray-900">{{ related_tool.name }}</h4>
                             </div>
                             <p class="text-sm text-gray-600 mb-3">{{ related_tool.description|truncatewords:10 }}</p>
-                            <a href="{% url 'tools:tool_detail' slug=related_tool.slug %}" 
+                            <a href="{% url 'tools:tool_detail' category=related_tool.category.slug slug=related_tool.slug %}" 
                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                 View Details →
                             </a>

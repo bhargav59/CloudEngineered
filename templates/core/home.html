@@ -4,50 +4,115 @@
 {% block title %}{{ site_name }} - AI-Powered Cloud Engineering Tool Reviews{% endblock %}
 
 {% block content %}
-<!-- Hero Section with Enhanced Design -->
-<section class="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 text-white relative overflow-hidden">
+<!-- Modern Hero Section -->
+<section class="bg-gradient-to-br from-indigo-900 via-blue-900 to-purple-900 text-white relative overflow-hidden min-h-screen flex items-center">
     <!-- Background Animation -->
-    <div class="absolute inset-0 opacity-20">
-        <div class="absolute top-10 left-10 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div class="absolute top-0 right-4 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-20 left-20 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-2xl animate-pulse"></div>
+        <div class="absolute top-40 right-20 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-2000"></div>
+        <div class="absolute bottom-20 left-40 w-96 h-96 bg-cyan-400 rounded-full mix-blend-multiply filter blur-2xl animate-pulse animation-delay-4000"></div>
     </div>
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
-        <div class="text-center">
-            <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                Discover the Best 
-                <span class="bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
-                    Cloud Engineering
-                </span> 
-                Tools
-            </h1>
-            <p class="text-xl md:text-2xl mb-8 text-blue-100 max-w-4xl mx-auto leading-relaxed">
-                AI-powered reviews, comparisons, and insights for DevOps professionals and technical decision-makers. 
-                Stay ahead with the latest cloud engineering trends.
-            </p>
-            
-            <!-- Enhanced Search Bar -->
-            <div class="max-w-2xl mx-auto mb-8">
-                <form action="{% url 'core:search' %}" method="GET" class="relative">
-                    <input 
-                        type="text" 
-                        name="q" 
-                        placeholder="Search for tools, categories, or technologies..." 
-                        class="w-full px-6 py-4 text-lg text-gray-900 bg-white rounded-2xl shadow-2xl focus:outline-none focus:ring-4 focus:ring-yellow-300 focus:ring-opacity-50 pl-14"
-                        id="hero-search"
-                    >
-                    <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
-                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 font-medium">
-                        Search
-                    </button>
-                </form>
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <!-- Left Side - Content -->
+            <div>
+                <div class="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-sm font-medium mb-6">
+                    <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                    AI-Powered Tool Analysis
+                </div>
                 
-                <!-- Quick Search Suggestions -->
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                    Find the Perfect 
+                    <span class="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                        Cloud Tools
+                    </span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl mb-8 text-blue-100 leading-relaxed">
+                    Comprehensive reviews, AI-powered comparisons, and expert insights for DevOps professionals. 
+                    Make informed decisions with data-driven tool evaluations.
+                </p>
+                
+                <!-- Search Bar -->
+                <div class="max-w-lg mb-8">
+                    <form action="{% url 'core:search' %}" method="GET" class="relative">
+                        <input 
+                            type="text" 
+                            name="q" 
+                            placeholder="Search Docker, Kubernetes, AWS..." 
+                            class="w-full px-6 py-4 text-lg text-gray-900 bg-white rounded-2xl shadow-2xl focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-opacity-50 pl-14"
+                        >
+                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-2 rounded-xl hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 font-medium">
+                            Search
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="{% url 'tools:category_list' %}" class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 shadow-lg transform hover:scale-105">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Explore Tools
+                    </a>
+                    <a href="{% url 'content:article_list' %}" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-900 transition-all duration-200 shadow-lg transform hover:scale-105">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.168 18.477 18.582 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        Read Reviews
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Right Side - Visual Element -->
+            <div class="relative">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-6 text-center">
+                        <div class="text-3xl font-bold text-cyan-400">{{ stats.total_tools }}+</div>
+                        <div class="text-sm text-blue-200">Tools Reviewed</div>
+                    </div>
+                    <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-6 text-center">
+                        <div class="text-3xl font-bold text-purple-400">{{ stats.total_articles }}+</div>
+                        <div class="text-sm text-blue-200">Expert Reviews</div>
+                    </div>
+                    <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-6 text-center">
+                        <div class="text-3xl font-bold text-green-400">{{ stats.total_categories }}+</div>
+                        <div class="text-sm text-blue-200">Categories</div>
+                    </div>
+                    <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-6 text-center">
+                        <div class="text-3xl font-bold text-yellow-400">4.8★</div>
+                        <div class="text-sm text-blue-200">Avg Rating</div>
+                    </div>
+                </div>
+                
+                <!-- Featured Tool Preview -->
+                {% if featured_tools %}
+                {% with featured_tools.first as featured_tool %}
+                <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-6">
+                    <div class="text-sm text-blue-200 mb-2">🔥 Trending Tool</div>
+                    <div class="font-semibold text-lg">{{ featured_tool.name }}</div>
+                    <div class="text-sm text-blue-200 mt-1">{{ featured_tool.category.name }}</div>
+                    <div class="flex items-center mt-3">
+                        <div class="flex text-yellow-400 text-sm">
+                            ★★★★★
+                        </div>
+                        <span class="text-blue-200 text-sm ml-2">Highly Recommended</span>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
                 <div class="flex flex-wrap justify-center gap-2 mt-4">
                     <a href="{% url 'tools:category_list' %}?category=ci-cd" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-full text-sm transition-all duration-200">
                         CI/CD Tools
@@ -124,7 +189,7 @@
                         </h3>
                         <div class="flex items-center text-yellow-500">
                             {% for i in "12345"|make_list %}
-                                {% if forloop.counter <= tool.rating|default:4 %}
+                                {% if forloop.counter <= 4 %}
                                     <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
@@ -154,7 +219,7 @@
                     </div>
                     
                     <div class="flex space-x-2">
-                        <a href="{% url 'tools:tool_detail' tool.slug %}" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-center font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200">
+                        <a href="{% url 'tools:tool_detail' tool.category.slug tool.slug %}" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-center font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200">
                             View Details
                         </a>
                         {% if tool.website_url %}
@@ -197,8 +262,8 @@
         </div>
         
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {% for category in featured_categories %}
-            <a href="{% url 'tools:category_detail' category.slug %}" class="group">
+            {% for category in popular_categories %}
+            <a href="{% url 'tools:tool_list' category.slug %}" class="group">
                 <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 text-center hover:from-blue-50 hover:to-purple-50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                     <div class="text-4xl mb-3">{{ category.icon|default:"🔧" }}</div>
                     <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
@@ -268,7 +333,7 @@
                     
                     <div class="flex items-center justify-between text-sm text-gray-500">
                         <span>{{ article.created_at|date:"M d, Y" }}</span>
-                        <span>{{ article.read_time|default:"5" }} min read</span>
+                        <span>{{ article.reading_time|default:"5" }} min read</span>
                     </div>
                     
                     <a href="{% url 'content:article_detail' article.slug %}" class="mt-4 inline-flex items-center text-blue-600 font-medium hover:text-blue-700 transition-colors duration-200">
