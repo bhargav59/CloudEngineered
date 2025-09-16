@@ -110,6 +110,10 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
+# Debug toolbar is referenced in urls.py but not installed
+# Removing it from INSTALLED_APPS to avoid errors
+DEBUG_TOOLBAR_ENABLED = False
+
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
