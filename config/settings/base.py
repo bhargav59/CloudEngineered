@@ -355,3 +355,101 @@ LOGGING = {
 
 # Create logs directory if it doesn't exist
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
+
+# ========================================
+# AI SERVICE CONFIGURATION
+# ========================================
+
+# OpenRouter API Configuration
+OPENROUTER_API_KEY = config('OPENROUTER_API_KEY', default='')
+OPENROUTER_APP_NAME = config('OPENROUTER_APP_NAME', default='CloudEngineered')
+SITE_URL = config('SITE_URL', default='https://cloudengineered.com')
+
+# AI Service Settings
+USE_OPENROUTER = config('USE_OPENROUTER', default=True, cast=bool)
+AI_MOCK_MODE = config('AI_MOCK_MODE', default=True, cast=bool)
+
+# AI Configuration
+AI_SETTINGS = {
+    'DEFAULT_SERVICE': 'openrouter',
+    'OPENROUTER': {
+        'API_KEY': OPENROUTER_API_KEY,
+        'APP_NAME': OPENROUTER_APP_NAME,
+        'SITE_URL': SITE_URL,
+        'DEFAULT_MODEL': 'openai/gpt-4o-mini',
+        'FALLBACK_MODELS': [
+            'openai/gpt-4o-mini',
+            'anthropic/claude-3-haiku',
+            'meta-llama/llama-3.1-8b-instruct',
+        ],
+        'BUDGET_MODELS': [
+            'meta-llama/llama-3.1-8b-instruct',
+            'mistralai/mistral-7b-instruct',
+        ],
+        'PREMIUM_MODELS': [
+            'openai/gpt-4o',
+            'anthropic/claude-3.5-sonnet',
+            'meta-llama/llama-3.1-70b-instruct',
+        ],
+        'MAX_TOKENS': 4096,
+        'DEFAULT_TEMPERATURE': 0.7,
+        'TIMEOUT': 60,  # seconds
+        'RETRY_ATTEMPTS': 3,
+        'ENABLE_CACHING': True,
+        'CACHE_TTL': 3600,  # 1 hour
+    },
+    'CONTENT_GENERATION': {
+        'ENABLE_ASYNC': True,
+        'MAX_CONCURRENT': 5,
+        'DEFAULT_QUALITY_THRESHOLD': 0.7,
+        'AUTO_REVIEW_THRESHOLD': 0.9,
+        'ENABLE_PROFANITY_FILTER': True,
+        'ENABLE_PLAGIARISM_CHECK': False,  # Requires additional service
+    },
+    'COST_CONTROL': {
+        'DAILY_LIMIT_USD': 10.0,
+        'MONTHLY_LIMIT_USD': 200.0,
+        'COST_TRACKING': True,
+        'ALERT_THRESHOLD': 0.8,  # Alert at 80% of limit
+        'AUTO_FALLBACK_ON_LIMIT': True,
+    }
+}
+
+# Legacy AI Settings (for backward compatibility)
+OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
+ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
+
+# Content Generation Settings
+CONTENT_GENERATION_ENABLED = config('CONTENT_GENERATION_ENABLED', default=True, cast=bool)
+AI_CONTENT_CACHE_TIMEOUT = 3600  # 1 hour
+
+# AI Models Configuration (for database seeding)
+DEFAULT_AI_MODELS = [
+    {
+        'provider': 'OpenRouter',
+        'name': 'openai/gpt-4o-mini',
+        'display_name': 'GPT-4o Mini',
+        'max_tokens': 128000,
+        'cost_per_1k_input_tokens': 0.00015,
+        'cost_per_1k_output_tokens': 0.0006,
+        'is_active': True,
+    },
+    {
+        'provider': 'OpenRouter',
+        'name': 'anthropic/claude-3-haiku',
+        'display_name': 'Claude 3 Haiku',
+        'max_tokens': 200000,
+        'cost_per_1k_input_tokens': 0.00025,
+        'cost_per_1k_output_tokens': 0.00125,
+        'is_active': True,
+    },
+    {
+        'provider': 'OpenRouter', 
+        'name': 'meta-llama/llama-3.1-8b-instruct',
+        'display_name': 'Llama 3.1 8B',
+        'max_tokens': 32768,
+        'cost_per_1k_input_tokens': 0.00018,
+        'cost_per_1k_output_tokens': 0.00018,
+        'is_active': True,
+    },
+]

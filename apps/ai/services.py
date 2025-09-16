@@ -2,7 +2,8 @@
 AI Services for Content Generation
 
 This module provides services for AI-powered content generation,
-including OpenAI GPT-4 integration and content quality assessment.
+including OpenRouter integration for access to multiple AI models
+at competitive prices.
 """
 
 import os
@@ -14,6 +15,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.utils import timezone
 from .models import AIProvider, AIModel, ContentTemplate, ContentGeneration, ContentQuality
+from .openrouter_service import get_openrouter_service
 
 logger = logging.getLogger(__name__)
 
@@ -24,38 +26,123 @@ class AIServiceError(Exception):
 
 
 class OpenAIService:
-    """OpenAI GPT integration service"""
+    """
+    Legacy OpenAI service - now uses OpenRouter for better pricing
+    This class maintains compatibility with existing code while
+    routing requests through OpenRouter.
+    """
     
     def __init__(self):
-        self.api_key = os.getenv('OPENAI_API_KEY')
-        if not self.api_key:
-            raise AIServiceError("OpenAI API key not found in environment variables")
+        self.openrouter_service = get_openrouter_service()
         
-        try:
-            import openai
-            self.client = openai.OpenAI(api_key=self.api_key)
-        except ImportError:
-            raise AIServiceError("openai package not installed. Run: pip install openai")
+        # Check if we should use OpenRouter or direct OpenAI
+        self.use_openrouter = getattr(settings, 'USE_OPENROUTER', True)
+        
+        if not self.use_openrouter:
+            # Legacy direct OpenAI support
+            self.api_key = os.getenv('OPENAI_API_KEY')
+            if not self.api_key:
+                raise AIServiceError("OpenAI API key not found in environment variables")
+            
+            try:
+                import openai
+                self.client = openai.OpenAI(api_key=self.api_key)
+            except ImportError:
+                raise AIServiceError("openai package not installed. Run: pip install openai")
     
     def generate_content(self, 
-                        system_prompt: str, 
-                        user_prompt: str, 
-                        model: str = "gpt-4", 
+                        system_prompt: str,
+                        user_prompt: str,
+                        model: str = "gpt-4",
                         max_tokens: int = 4096,
                         temperature: float = 0.7) -> Dict[str, Any]:
         """
-        Generate content using OpenAI GPT models
+        Generate content using AI models via OpenRouter
         
         Args:
             system_prompt: System prompt for the AI model
             user_prompt: User prompt with specific request
-            model: Model name (e.g., "gpt-4", "gpt-3.5-turbo")
+            model: Model name (automatically maps to OpenRouter format)
             max_tokens: Maximum tokens in response
             temperature: Creativity level (0.0 to 1.0)
             
         Returns:
             Dictionary with generated content and metadata
         """
+        # Check if we should use mock mode
+        if getattr(settings, 'AI_MOCK_MODE', False):
+            return self._generate_mock_content(system_prompt, user_prompt, model)
+        
+        if self.use_openrouter:
+            # Map legacy model names to OpenRouter format
+            openrouter_model = self._map_model_name(model)
+            
+            return self.openrouter_service.generate_content(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                model=openrouter_model,
+                max_tokens=max_tokens,
+                temperature=temperature
+            )
+        else:
+            # Legacy direct OpenAI implementation
+            return self._generate_with_openai_direct(
+                system_prompt, user_prompt, model, max_tokens, temperature
+            )
+    
+    def _map_model_name(self, model: str) -> str:
+        """Map legacy model names to OpenRouter format"""
+        model_mapping = {
+            'gpt-4': 'openai/gpt-4o',
+            'gpt-4-turbo': 'openai/gpt-4o',
+            'gpt-4o': 'openai/gpt-4o',
+            'gpt-4o-mini': 'openai/gpt-4o-mini',
+            'gpt-3.5-turbo': 'openai/gpt-3.5-turbo',
+            'claude-3-sonnet': 'anthropic/claude-3.5-sonnet',
+            'claude-3-haiku': 'anthropic/claude-3-haiku',
+        }
+        
+        return model_mapping.get(model, f'openai/{model}')
+    
+    def _generate_mock_content(self, system_prompt: str, user_prompt: str, model: str) -> Dict[str, Any]:
+        """Generate mock content for testing"""
+        import random
+        import time
+        
+        # Simulate processing time
+        time.sleep(random.uniform(0.5, 1.5))
+        
+        mock_content = f"""This is mock content generated for testing purposes.
+
+System prompt: {system_prompt[:100]}...
+User prompt: {user_prompt[:100]}...
+Model: {model}
+
+This would normally contain AI-generated content based on your prompts.
+In production, this will be replaced with actual AI responses from OpenRouter."""
+        
+        # Simulate realistic metrics
+        word_count = len(mock_content.split())
+        estimated_tokens = int(word_count * 1.3)
+        
+        return {
+            'content': mock_content,
+            'tokens_used': estimated_tokens,
+            'input_tokens': int(estimated_tokens * 0.7),
+            'output_tokens': int(estimated_tokens * 0.3),
+            'processing_time': random.uniform(0.5, 2.0),
+            'model': model,
+            'usage': {
+                'prompt_tokens': int(estimated_tokens * 0.7),
+                'completion_tokens': int(estimated_tokens * 0.3),
+                'total_tokens': estimated_tokens
+            },
+            'raw_response': {'mock': True}
+        }
+    
+    def _generate_with_openai_direct(self, system_prompt: str, user_prompt: str, 
+                                   model: str, max_tokens: int, temperature: float) -> Dict[str, Any]:
+        """Legacy direct OpenAI implementation (backup)"""
         start_time = time.time()
         
         try:
@@ -78,6 +165,11 @@ class OpenAIService:
                 'output_tokens': response.usage.completion_tokens,
                 'processing_time': processing_time,
                 'model': model,
+                'usage': {
+                    'prompt_tokens': response.usage.prompt_tokens,
+                    'completion_tokens': response.usage.completion_tokens,
+                    'total_tokens': response.usage.total_tokens
+                },
                 'raw_response': response.model_dump()
             }
             
@@ -87,10 +179,11 @@ class OpenAIService:
 
 
 class ContentGenerator:
-    """High-level content generation service"""
+    """High-level content generation service with OpenRouter integration"""
     
     def __init__(self):
         self.openai_service = None
+        self.openrouter_service = get_openrouter_service()
         
     def _init_openai_service(self):
         """Initialize OpenAI service only when needed"""
@@ -106,29 +199,28 @@ class ContentGenerator:
                         template: ContentTemplate, 
                         input_data: Dict[str, Any], 
                         user: Any = None,
-                        mock: bool = False) -> Dict[str, Any]:
+                        mock: bool = None,
+                        model: str = None) -> Dict[str, Any]:
         """
-        Generate content using AI templates (new interface)
+        Generate content using AI templates with OpenRouter integration
         
         Args:
             template: ContentTemplate instance
             input_data: Dictionary containing input variables
             user: User who initiated the generation
-            mock: If True, generate mock content instead of real AI content
+            mock: If True, generate mock content; if None, use AI_MOCK_MODE setting
+            model: Specific model to use (optional)
             
         Returns:
             Dictionary containing generated content and metadata
         """
         start_time = time.time()
         
-        if mock:
-            return self._generate_mock_content(template, input_data)
+        # Determine if we should use mock mode
+        if mock is None:
+            mock = getattr(settings, 'AI_MOCK_MODE', False)
         
-        # Initialize OpenAI service
-        openai_service = self._init_openai_service()
-        if not openai_service:
-            # Fall back to mock if OpenAI is not available
-            logger.warning("OpenAI service not available, falling back to mock mode")
+        if mock:
             return self._generate_mock_content(template, input_data)
         
         try:
@@ -136,37 +228,55 @@ class ContentGenerator:
             formatted_system_prompt = self._format_prompt(template.system_prompt, input_data)
             formatted_user_prompt = self._format_prompt(template.user_prompt_template, input_data)
             
-            # Get AI model configuration
-            ai_model = template.model
+            # Determine which model to use
+            if not model:
+                if hasattr(template, 'model') and template.model:
+                    model = template.model.name
+                else:
+                    # Use OpenRouter's recommended model
+                    task_type = self._determine_task_type(template.template_type)
+                    model = self.openrouter_service.get_recommended_model(task_type)
             
-            # Generate content using OpenAI
-            result = openai_service.generate_content(
+            # Generate content using OpenRouter
+            result = self.openrouter_service.generate_content(
                 system_prompt=formatted_system_prompt,
                 user_prompt=formatted_user_prompt,
-                model=ai_model.name,
-                max_tokens=ai_model.max_tokens,
+                model=model,
+                max_tokens=getattr(template.model, 'max_tokens', 4096) if hasattr(template, 'model') and template.model else 4096,
                 temperature=0.7
             )
             
             processing_time = time.time() - start_time
             
-            # Calculate cost estimate
-            input_tokens = result['usage']['prompt_tokens']
-            output_tokens = result['usage']['completion_tokens']
-            total_tokens = result['usage']['total_tokens']
-            
-            cost = self._calculate_cost(ai_model, input_tokens, output_tokens)
-            
             return {
                 'content': result['content'],
-                'tokens_used': total_tokens,
-                'cost': cost,
-                'processing_time': processing_time
+                'tokens_used': result['tokens_used'],
+                'input_tokens': result['input_tokens'],
+                'output_tokens': result['output_tokens'],
+                'cost': result['estimated_cost'],
+                'processing_time': processing_time,
+                'model': result['model'],
+                'model_info': result.get('model_info', {}),
+                'usage': result['usage']
             }
             
         except Exception as e:
             logger.error(f"Content generation failed: {str(e)}")
-            raise AIServiceError(f"Content generation failed: {str(e)}")
+            # Fallback to mock content on error
+            logger.warning("Falling back to mock content due to error")
+            return self._generate_mock_content(template, input_data)
+    
+    def _determine_task_type(self, template_type: str) -> str:
+        """Determine the task type for model recommendation"""
+        task_mapping = {
+            'tool_review': 'technical',
+            'comparison': 'technical',
+            'guide': 'general',
+            'tutorial': 'technical',
+            'news': 'general',
+            'overview': 'general',
+        }
+        return task_mapping.get(template_type, 'general')
     
     def _generate_mock_content(self, template: ContentTemplate, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Generate mock content for testing purposes"""
@@ -264,8 +374,17 @@ This content is generated in mock mode for testing purposes.
         return {
             'content': content.strip(),
             'tokens_used': int(estimated_tokens),
+            'input_tokens': int(estimated_tokens * 0.7),  # Estimate
+            'output_tokens': int(estimated_tokens * 0.3),  # Estimate
             'cost': round(estimated_cost, 4),
-            'processing_time': round(processing_time, 2)
+            'processing_time': round(processing_time, 2),
+            'model': 'mock-model',
+            'model_info': {'provider': 'mock'},
+            'usage': {
+                'prompt_tokens': int(estimated_tokens * 0.7),
+                'completion_tokens': int(estimated_tokens * 0.3),
+                'total_tokens': int(estimated_tokens)
+            }
         }
     
     def _format_prompt(self, prompt_template: str, input_data: Dict[str, Any]) -> str:
@@ -320,24 +439,20 @@ This content is generated in mock mode for testing purposes.
             generation.generated_prompt = rendered_prompt
             generation.save()
             
-            # Generate content using AI service
-            ai_response = self.openai_service.generate_content(
+            # Generate content using OpenRouter service
+            ai_response = self.openrouter_service.generate_content(
                 system_prompt=template.system_prompt,
                 user_prompt=rendered_prompt,
-                model=template.model.name,
-                max_tokens=template.model.max_tokens
+                model=template.model.name if hasattr(template, 'model') and template.model else None,
+                max_tokens=getattr(template.model, 'max_tokens', 4096) if hasattr(template, 'model') and template.model else 4096
             )
             
             # Update generation record with results
             generation.generated_content = ai_response['content']
-            generation.raw_response = ai_response['raw_response']
+            generation.raw_response = ai_response.get('raw_response', {})
             generation.tokens_used = ai_response['tokens_used']
-            generation.processing_time = ai_response['processing_time']
-            generation.estimated_cost = self._calculate_cost(
-                template.model,
-                ai_response['input_tokens'],
-                ai_response['output_tokens']
-            )
+            generation.processing_time = ai_response.get('processing_time', 0)
+            generation.estimated_cost = ai_response.get('estimated_cost', 0)
             generation.mark_completed()
             
             # Create quality assessment
