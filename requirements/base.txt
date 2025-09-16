@@ -15,28 +15,17 @@ celery>=5.3.0
 django-celery-beat>=2.5.0
 django-celery-results>=2.5.0
 
-# Core Django packages
-Django==4.2.7
-django-environ==0.11.2
-django-extensions==3.2.3
-django-cors-headers==4.3.1
+# API and JWT
+djangorestframework-simplejwt>=5.3.0
 
-# API and serialization
-djangorestframework==3.14.0
-djangorestframework-simplejwt==5.3.0
-
-# Database
-psycopg2-binary==2.9.7
-
-# Caching and Background Tasks
-django-redis==5.4.0
-redis==5.0.1
-celery==5.3.4
+# Environment Configuration
+django-environ>=0.11.2
 flower==2.0.1  # Celery monitoring
 
 # AI and Content Generation
-openai==1.3.3
+openai>=1.30.0  # Compatible with OpenRouter API
 anthropic==0.7.7
+httpx>=0.25.0  # For async HTTP requests
 transformers==4.35.2
 torch>=2.6.0
 sentence-transformers==2.2.2
@@ -48,9 +37,6 @@ selenium==4.15.2
 
 # Image processing
 Pillow==10.1.0
-
-# SEO and sitemap
-django-sitemap==2.4
 
 # Development tools
 django-debug-toolbar==4.2.0
@@ -97,7 +83,6 @@ whitenoise>=6.5.0
 
 # SEO and Meta Management
 django-meta>=2.2.0
-django-sitemap>=2.2.0
 
 # Configuration Management
 python-decouple>=3.8
