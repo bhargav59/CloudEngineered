@@ -8,10 +8,24 @@ from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from django.views.generic import TemplateView
 from apps.core.sitemaps import sitemaps
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def health_check(request):
+    """Health check endpoint for Railway deployment monitoring"""
+    return JsonResponse({
+        'status': 'healthy',
+        'service': 'cloudengineered',
+        'version': '1.0.0'
+    })
 
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
+    path('health/', health_check, name='health_check'),  # Add this line
     
     # SEO Files
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
