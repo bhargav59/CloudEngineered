@@ -26,16 +26,16 @@ COPY . /app/
 # Create static files directory
 RUN mkdir -p /app/staticfiles
 
-# Collect static files
-RUN python manage.py collectstatic --noinput --settings=config.settings.production || true
-
 # Create non-root user
 RUN adduser --disabled-password --gecos '' cloudengineered
 RUN chown -R cloudengineered:cloudengineered /app
 USER cloudengineered
 
-# Expose port
+# Expose port (Railway provides $PORT at runtime)
 EXPOSE 8000
 
-# Run gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "config.wsgi:application"]
+# Ensure start script is executable and use it as the container command
+RUN chmod +x /app/start.sh
+
+# Start via start.sh which runs migrations, collectstatic, then gunicorn bound to $PORT
+CMD ["./start.sh"]

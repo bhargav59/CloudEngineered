@@ -1,9 +1,9 @@
 {
   "build": {
-    "builder": "nixpacks"
+    "builder": "docker",
+    "dockerfilePath": "docker/Dockerfile"
   },
   "deploy": {
-    "startCommand": "./start.sh",
     "healthcheckPath": "/health/",
     "healthcheckTimeout": 100,
     "restartPolicyType": "on_failure",
