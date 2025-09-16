@@ -48,6 +48,25 @@
         gtag('config', '{{ site_config.google_analytics_id }}');
     </script>
     {% endif %}
+    
+    <!-- Structured Data -->
+    {% block structured_data %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "{{ site_name }}",
+        "description": "{{ site_config.default_meta_description }}",
+        "url": "{{ site_config.site_url|default:'https://cloudengineered.com' }}",
+        "logo": "{% load static %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo-social.png' %}",
+        "sameAs": [
+            {% if site_config.twitter_url %}"{{ site_config.twitter_url }}"{% endif %}
+            {% if site_config.linkedin_url %}{% if site_config.twitter_url %},{% endif %}"{{ site_config.linkedin_url }}"{% endif %}
+            {% if site_config.github_url %}{% if site_config.twitter_url or site_config.linkedin_url %},{% endif %}"{{ site_config.github_url }}"{% endif %}
+        ]
+    }
+    </script>
+    {% endblock %}
 </head>
 <body class="min-h-screen bg-gray-50">
     <!-- Header -->

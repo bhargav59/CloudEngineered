@@ -4,6 +4,37 @@
 {% block title %}{{ article.title }} - {{ site_name }}{% endblock %}
 {% block meta_description %}{{ article.excerpt }}{% endblock %}
 
+{% block structured_data %}
+{{ block.super }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ article.title }}",
+    "description": "{{ article.excerpt|default:article.meta_description }}",
+    "image": "{% if article.featured_image %}{{ request.scheme }}://{{ request.get_host }}{{ article.featured_image.url }}{% else %}{% load static %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo-social.png' %}{% endif %}",
+    "author": {
+        "@type": "Person",
+        "name": "{{ article.author_name|default:article.author.get_full_name|default:article.author.username }}"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "{{ site_name }}",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "{% load static %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo-social.png' %}"
+        }
+    },
+    "datePublished": "{{ article.published_at|date:'c' }}",
+    "dateModified": "{{ article.updated_at|date:'c' }}",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ request.build_absolute_uri }}"
+    }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <!-- Article Header -->
 <article class="bg-white">
