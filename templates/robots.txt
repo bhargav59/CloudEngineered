@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/auth/
+Disallow: /media/private/
+Disallow: /analytics/internal/
+Disallow: /*.json$
+Disallow: /api/internal/
+
+# Allow important API endpoints
+Allow: /api/ai/models/
+Allow: /api/tools/
+Allow: /api/content/
+
+# Sitemap location
+Sitemap: https://cloudengineered.com/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1
