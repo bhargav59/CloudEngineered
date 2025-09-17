@@ -3,39 +3,47 @@ FROM python:3.11-slim
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install only essential system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
-    build-essential \
     libpq-dev \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    gcc \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* /var/tmp/*
 
-# Install Python dependencies
-COPY requirements/base.txt /app/requirements/base.txt
-COPY requirements/production.txt /app/requirements/production.txt
-RUN pip install --no-cache-dir -r requirements/production.txt
+# Copy only requirements first for better caching
+COPY requirements/railway.txt ./requirements/railway.txt
 
-# Copy project
-COPY . /app/
+# Install Python dependencies with optimizations
+RUN pip install --no-cache-dir -r requirements/railway.txt \
+    && find /usr/local/lib/python3.11/site-packages -name "*.pyc" -delete \
+    && find /usr/local/lib/python3.11/site-packages -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
-# Create static files directory
-RUN mkdir -p /app/staticfiles
+# Copy only necessary project files
+COPY manage.py start.sh ./
+COPY config/ ./config/
+COPY apps/ ./apps/
+COPY templates/ ./templates/
+COPY static/ ./static/
 
-# Create non-root user
-RUN adduser --disabled-password --gecos '' cloudengineered
-RUN chown -R cloudengineered:cloudengineered /app
+# Create directories and set permissions
+RUN mkdir -p /app/staticfiles /app/media \
+    && chmod +x /app/start.sh \
+    && adduser --disabled-password --gecos '' --uid 1000 cloudengineered \
+    && chown -R cloudengineered:cloudengineered /app
+
+# Switch to non-root user
 USER cloudengineered
 
-# Expose port (Railway provides $PORT at runtime)
+# Expose port
 EXPOSE 8000
 
-# Ensure start script is executable and use it as the container command
-RUN chmod +x /app/start.sh
-
-# Start via start.sh which runs migrations, collectstatic, then gunicorn bound to $PORT
+# Start via optimized start script
 CMD ["./start.sh"]

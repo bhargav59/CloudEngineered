@@ -1,0 +1,7 @@
+# Force Railway to ignore files that trigger Nixpacks detection
+nixpacks.toml
+package.json
+yarn.lock
+pnpm-lock.yaml
+requirements/
+*.toml

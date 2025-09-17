@@ -1,8 +1,15 @@
-# Dockerignore for Railway deployment
+# Dockerignore for Railway deployment - minimize image size
 .git
 .gitignore
 README.md
-Dockerfile*
+DEVELOPMENT_*.md
+IMPLEMENTATION.md
+PRODUCTION_*.md
+PHASE8_*.md
+OPENROUTER_*.md
+SEO_*.md
+*.md
+docker/
 .dockerignore
 .env
 .env.*
@@ -27,6 +34,7 @@ coverage.xml
 .DS_Store
 *.sqlite3
 *.db
+db.sqlite3
 node_modules/
 npm-debug.log*
 .vscode/
@@ -34,3 +42,12 @@ npm-debug.log*
 *.swp
 *.swo
 *~
+test_*.py
+setup_*.py
+seo_optimizer.py
+Screenshot*.png
+celery_app.py
+setup.sh
+render.yaml
+Procfile
+# Code Citations.md
