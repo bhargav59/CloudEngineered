@@ -1,6 +1,8 @@
 {
   "build": {
-    "builder": "docker"
+    "builder": "docker",
+    "buildCommand": "docker build -t app .",
+    "watchPatterns": ["**"]
   },
   "deploy": {
     "healthcheckPath": "/health/",
