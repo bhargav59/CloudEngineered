@@ -18,11 +18,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/* /var/tmp/*
 
-# Copy only requirements first for better caching
-COPY requirements/railway.txt ./requirements/railway.txt
+# Copy requirements first for better caching
+COPY requirements/base.txt requirements/production.txt ./requirements/
 
 # Install Python dependencies with optimizations
-RUN pip install --no-cache-dir -r requirements/railway.txt \
+RUN pip install --no-cache-dir -r requirements/production.txt \
     && find /usr/local/lib/python3.11/site-packages -name "*.pyc" -delete \
     && find /usr/local/lib/python3.11/site-packages -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 

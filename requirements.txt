@@ -1,7 +1,0 @@
-# Railway deployment requirements - points to production requirements
--r requirements/production.txt
-
-# Additional Railway-specific packages
-gunicorn==21.2.0
-psycopg2-binary==2.9.9
-whitenoise[brotli]==6.6.0
