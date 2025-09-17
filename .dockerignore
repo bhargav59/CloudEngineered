@@ -1,4 +1,4 @@
-# Dockerignore for Railway deployment - minimize image size
+# Generic Dockerignore for Django deployment
 .git
 .gitignore
 README.md
@@ -48,6 +48,4 @@ seo_optimizer.py
 Screenshot*.png
 celery_app.py
 setup.sh
-render.yaml
-Procfile
 # Code Citations.md
