@@ -92,6 +92,7 @@
                     <a href="{% url 'core:about' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">About</a>
                     {% if user.is_staff or user.is_superuser %}
                         <a href="{% url 'analytics:dashboard' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Analytics</a>
+                        <a href="{% url 'core:ai_dashboard' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">AI Dashboard</a>
                     {% endif %}
                 </div>
                 
