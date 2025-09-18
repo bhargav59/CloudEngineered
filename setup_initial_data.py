@@ -104,7 +104,7 @@ def create_initial_data():
             'website_url': 'https://github.com/features/actions',
             'github_url': 'https://github.com/actions',
             'pricing_model': 'freemium',
-            'deployment_type': 'cloud',
+            'deployment_types': ['cloud'],
             'tags': 'ci, cd, github, workflows, automation',
             'is_featured': True
         },
@@ -116,7 +116,7 @@ def create_initial_data():
             'website_url': 'https://www.jenkins.io/',
             'github_url': 'https://github.com/jenkinsci/jenkins',
             'pricing_model': 'free',
-            'deployment_type': 'self_hosted',
+            'deployment_types': ['self_hosted'],
             'tags': 'ci, cd, automation, open source',
             'is_featured': True
         },
@@ -129,7 +129,7 @@ def create_initial_data():
             'website_url': 'https://prometheus.io/',
             'github_url': 'https://github.com/prometheus/prometheus',
             'pricing_model': 'free',
-            'deployment_type': 'self_hosted',
+            'deployment_types': ['self_hosted'],
             'tags': 'monitoring, metrics, alerting, open source',
             'is_featured': True
         },
@@ -140,7 +140,7 @@ def create_initial_data():
             'description': 'Cloud-based monitoring and analytics platform',
             'website_url': 'https://www.datadoghq.com/',
             'pricing_model': 'paid',
-            'deployment_type': 'cloud',
+            'deployment_types': ['cloud'],
             'tags': 'monitoring, analytics, apm, logs',
             'is_featured': True
         },
@@ -152,7 +152,7 @@ def create_initial_data():
             'description': 'Developer security platform for finding and fixing vulnerabilities',
             'website_url': 'https://snyk.io/',
             'pricing_model': 'freemium',
-            'deployment_type': 'cloud',
+            'deployment_types': ['cloud'],
             'tags': 'security, vulnerabilities, scanning, dependencies',
             'is_featured': True
         },
@@ -164,7 +164,7 @@ def create_initial_data():
             'description': 'Amazon Web Services - comprehensive cloud computing platform',
             'website_url': 'https://aws.amazon.com/',
             'pricing_model': 'pay_per_use',
-            'deployment_type': 'cloud',
+            'deployment_types': ['cloud'],
             'tags': 'cloud, aws, infrastructure, platform',
             'is_featured': True
         },
@@ -177,7 +177,7 @@ def create_initial_data():
             'website_url': 'https://kubernetes.io/',
             'github_url': 'https://github.com/kubernetes/kubernetes',
             'pricing_model': 'free',
-            'deployment_type': 'self_hosted',
+            'deployment_types': ['self_hosted'],
             'tags': 'containers, orchestration, kubernetes, k8s',
             'is_featured': True
         },
@@ -190,7 +190,7 @@ def create_initial_data():
             'website_url': 'https://www.terraform.io/',
             'github_url': 'https://github.com/hashicorp/terraform',
             'pricing_model': 'freemium',
-            'deployment_type': 'self_hosted',
+            'deployment_types': ['self_hosted'],
             'tags': 'iac, terraform, infrastructure, hashicorp',
             'is_featured': True
         }
