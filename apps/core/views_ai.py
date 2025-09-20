@@ -16,10 +16,10 @@ from datetime import timedelta
 
 from apps.automation.ai_content_generator import AIContentGenerator
 from apps.automation.tasks import (
-    generate_ai_tool_review, 
-    generate_ai_tool_comparison,
-    generate_trend_analysis,
-    scan_github_for_new_tools
+    generate_tool_content,
+    generate_tool_comparison,
+    generate_trending_content,
+    scan_github_for_tools
 )
 from apps.tools.models import Tool, Category, ToolComparison
 from apps.content.models import Article
@@ -109,7 +109,7 @@ def generate_tool_review_ajax(request):
         tool = get_object_or_404(Tool, id=tool_id)
         
         # Queue the task
-        task = generate_ai_tool_review.delay(tool_id, provider=provider)
+        task = generate_tool_content.delay(tool_id, content_types=["review"])
         
         return JsonResponse({
             'success': True,
@@ -141,7 +141,7 @@ def generate_comparison_ajax(request):
             return JsonResponse({'success': False, 'error': 'Some tools not found'})
         
         # Queue the task
-        task = generate_ai_tool_comparison.delay(tool_ids, provider=provider)
+        task = generate_tool_comparison.delay(tool_ids)
         
         tool_names = [tool.name for tool in tools]
         return JsonResponse({
@@ -156,7 +156,7 @@ def generate_comparison_ajax(request):
 
 @staff_member_required
 @require_http_methods(["POST"])
-def generate_trend_analysis_ajax(request):
+def generate_trending_content_ajax(request):
     """AJAX endpoint for generating trend analysis."""
     try:
         category_id = request.POST.get('category_id')
@@ -168,7 +168,7 @@ def generate_trend_analysis_ajax(request):
         category = get_object_or_404(Category, id=category_id)
         
         # Queue the task
-        task = generate_trend_analysis.delay(category_id, provider=provider)
+        task = generate_trending_content.delay()
         
         return JsonResponse({
             'success': True,
@@ -186,7 +186,7 @@ def scan_github_ajax(request):
     """AJAX endpoint for scanning GitHub for new tools."""
     try:
         # Queue the task
-        task = scan_github_for_new_tools.delay()
+        task = scan_github_for_tools.delay()
         
         return JsonResponse({
             'success': True,
@@ -258,7 +258,7 @@ def bulk_ai_operations(request):
                 
                 task_ids = []
                 for tool in new_tools:
-                    task = generate_ai_tool_review.delay(tool.id)
+                    task = generate_tool_content.delay(tool.id, content_types=["review"])
                     task_ids.append(task.id)
                 
                 messages.success(
@@ -277,7 +277,7 @@ def bulk_ai_operations(request):
                     tools = list(category.tools.order_by('-github_stars')[:3])
                     if len(tools) >= 2:
                         tool_ids = [tool.id for tool in tools]
-                        generate_ai_tool_comparison.delay(tool_ids)
+                        generate_tool_comparison.delay(tool_ids)
                         comparison_count += 1
                 
                 messages.success(
@@ -292,7 +292,7 @@ def bulk_ai_operations(request):
                 ).filter(tool_count__gte=3)
                 
                 for category in categories_with_tools:
-                    generate_trend_analysis.delay(category.id)
+                    generate_trending_content.delay()
                 
                 messages.success(
                     request,
