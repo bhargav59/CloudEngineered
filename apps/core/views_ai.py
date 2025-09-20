@@ -16,10 +16,10 @@ from datetime import timedelta
 
 from apps.automation.ai_content_generator import AIContentGenerator
 from apps.automation.tasks import (
-    generate_ai_tool_review, 
-    generate_ai_tool_comparison,
-    generate_trend_analysis,
-    scan_github_for_new_tools
+    # generate_ai_tool_review,  # Not implemented yet
+    generate_tool_comparison,
+    generate_trending_content,
+    scan_github_for_tools
 )
 from apps.tools.models import Tool, Category, ToolComparison
 from apps.content.models import Article

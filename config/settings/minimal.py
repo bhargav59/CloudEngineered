@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     
     # Third party apps that are available
     'rest_framework',
+    'debug_toolbar',
     
     # Local apps
     'apps.core',
