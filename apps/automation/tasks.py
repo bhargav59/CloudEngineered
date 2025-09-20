@@ -2,8 +2,28 @@
 Celery tasks for automation workflows in CloudEngineered platform.
 """
 
-from celery import shared_task
-from celery.utils.log import get_task_logger
+try:
+    from celery import shared_task
+    from celery.utils.log import get_task_logger
+    logger = get_task_logger(__name__)
+except ImportError:
+    # Mock shared_task decorator when celery is not available
+    def shared_task(*args, **kwargs):
+        """Mock decorator for when celery is not available"""
+        def decorator(func):
+            def wrapper(*func_args, **func_kwargs):
+                print(f"Mock task execution: {func.__name__}")
+                return func(*func_args, **func_kwargs)
+            return wrapper
+        
+        # Handle both @shared_task and @shared_task() syntax
+        if len(args) == 1 and callable(args[0]):
+            return decorator(args[0])
+        return decorator
+    
+    import logging
+    logger = logging.getLogger(__name__)
+
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
@@ -12,10 +32,14 @@ import json
 
 from apps.tools.models import Tool, Category
 from apps.content.models import Article
-from .ai_content_generator import AIContentGenerator
-from .github_monitor import GitHubMonitor
 
-logger = get_task_logger(__name__)
+try:
+    from .ai_content_generator import AIContentGenerator
+    from .github_monitor import GitHubMonitor
+except ImportError as e:
+    logger.warning(f"Some automation modules unavailable: {e}")
+    AIContentGenerator = None
+    GitHubMonitor = None
 
 
 @shared_task(bind=True, max_retries=3)

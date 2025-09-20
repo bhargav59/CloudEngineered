@@ -13,7 +13,11 @@ import logging
 from typing import Dict, Any, Optional, List
 from decimal import Decimal
 from django.conf import settings
-import openai
+
+try:
+    import openai
+except ImportError:
+    openai = None
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +122,9 @@ class OpenRouterService:
     
     def __init__(self):
         """Initialize OpenRouter service"""
+        if openai is None:
+            raise ImportError("OpenAI package is required for OpenRouter service. Run: pip install openai")
+            
         self.api_key = self._get_api_key()
         self.site_url = getattr(settings, 'SITE_URL', 'https://cloudengineered.com')
         self.app_name = getattr(settings, 'OPENROUTER_APP_NAME', 'CloudEngineered')

@@ -14,13 +14,32 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
 
-from apps.automation.ai_content_generator import AIContentGenerator
-from apps.automation.tasks import (
-    generate_ai_tool_review, 
-    generate_ai_tool_comparison,
-    generate_trend_analysis,
-    scan_github_for_new_tools
-)
+try:
+    from apps.automation.ai_content_generator import AIContentGenerator
+except ImportError:
+    AIContentGenerator = None
+
+try:
+    from apps.automation.tasks import (
+        generate_ai_tool_review, 
+        generate_ai_tool_comparison,
+        generate_trend_analysis,
+        scan_github_for_new_tools
+    )
+except ImportError:
+    # Create mock functions when tasks are not available
+    def generate_ai_tool_review(*args, **kwargs):
+        return {"success": False, "error": "Task system unavailable"}
+    
+    def generate_ai_tool_comparison(*args, **kwargs):
+        return {"success": False, "error": "Task system unavailable"}
+    
+    def generate_trend_analysis(*args, **kwargs):
+        return {"success": False, "error": "Task system unavailable"}
+    
+    def scan_github_for_new_tools(*args, **kwargs):
+        return {"success": False, "error": "Task system unavailable"}
+
 from apps.tools.models import Tool, Category, ToolComparison
 from apps.content.models import Article
 
