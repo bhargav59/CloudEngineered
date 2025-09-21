@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ comparison.title }} - {{ site_name }}{% endblock %}
+{% block meta_description %}{{ comparison.description|truncatewords:30 }}{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <nav class="text-blue-200 text-sm mb-4">
+                <a href="{% url 'core:home' %}" class="hover:text-white">Home</a>
+                <span class="mx-2">/</span>
+                <a href="{% url 'tools:comparison_list' %}" class="hover:text-white">Comparisons</a>
+                <span class="mx-2">/</span>
+                <span class="text-white">{{ comparison.title }}</span>
+            </nav>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ comparison.title }}</h1>
+            <p class="text-xl text-blue-100 max-w-3xl mx-auto">
+                {{ comparison.description }}
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Tools Overview -->
+<section class="py-12 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Tools Compared</h2>
+        <div class="grid grid-cols-1 md:grid-cols-{{ tools|length }} gap-6">
+            {% for tool in tools %}
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                {% if tool.logo %}
+                <img src="{{ tool.logo.url }}" alt="{{ tool.name }} logo" class="w-16 h-16 mx-auto mb-4 rounded">
+                {% else %}
+                <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-tools text-2xl text-gray-500"></i>
+                </div>
+                {% endif %}
+                <h3 class="text-xl font-bold text-gray-900 mb-2">{{ tool.name }}</h3>
+                <p class="text-gray-600 text-sm mb-4">{{ tool.tagline|default:tool.description|truncatewords:15 }}</p>
+                <div class="flex items-center justify-center mb-2">
+                    <span class="text-yellow-400">
+                        {% for i in "12345" %}
+                        {% if forloop.counter <= tool.rating_average|floatformat:0 %}
+                        <i class="fas fa-star"></i>
+                        {% else %}
+                        <i class="far fa-star"></i>
+                        {% endif %}
+                        {% endfor %}
+                    </span>
+                    <span class="text-sm text-gray-600 ml-2">({{ tool.rating_count }} reviews)</span>
+                </div>
+                <a href="{% url 'tools:tool_detail' category=tool.category.slug slug=tool.slug %}" 
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                    View Details
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Comparison Table -->
+{% if comparison_data %}
+<section class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8">Side-by-Side Comparison</h2>
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Criteria
+                            </th>
+                            {% for tool in tools %}
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {{ tool.name }}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for item in comparison_data %}
+                        <tr class="{% cycle 'bg-white' 'bg-gray-50' %}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ item.criteria }}
+                            </td>
+                            {% for value in item.values %}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ value }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Introduction -->
+{% if comparison.introduction %}
+<section class="py-12 bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Introduction</h2>
+        <div class="prose prose-lg max-w-none">
+            {{ comparison.introduction|linebreaks }}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Conclusion -->
+{% if comparison.conclusion %}
+<section class="py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Conclusion</h2>
+        <div class="prose prose-lg max-w-none">
+            {{ comparison.conclusion|linebreaks }}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Recommendation -->
+{% if comparison.recommendation %}
+<section class="py-12 bg-blue-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Our Recommendation</h2>
+        <div class="bg-white rounded-lg p-6 border-l-4 border-blue-500">
+            <div class="prose prose-lg max-w-none">
+                {{ comparison.recommendation|linebreaks }}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Related Comparisons -->
+<section class="py-12 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">More Comparisons</h2>
+            <a href="{% url 'tools:comparison_list' %}" 
+               class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                View All Comparisons
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Metadata -->
+<section class="py-8 border-t border-gray-200">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between text-sm text-gray-500">
+            <div class="flex items-center space-x-4">
+                <span><i class="fas fa-calendar mr-1"></i>Updated {{ comparison.updated_at|date:"M d, Y" }}</span>
+                <span><i class="fas fa-eye mr-1"></i>{{ comparison.view_count }} views</span>
+                {% if comparison.author %}
+                <span><i class="fas fa-user mr-1"></i>By {{ comparison.author.get_full_name|default:comparison.author.username }}</span>
+                {% endif %}
+            </div>
+            <div class="flex items-center space-x-2">
+                <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors" title="Share">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+                <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors" title="Bookmark">
+                    <i class="far fa-bookmark"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

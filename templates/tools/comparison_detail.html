@@ -1,0 +1,439 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load tools_extras %}
+
+{% block title %}{{ comparison.title }} - {{ site_name }}{% endblock %}
+{% block meta_description %}{{ comparison.description|truncatewords:30 }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.comparison-section {
+    border-left: 4px solid #3B82F6;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.tool-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.tool-card:hover {
+    border-color: #3B82F6;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.feature-matrix table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.feature-matrix th, .feature-matrix td {
+    border: 1px solid #e5e7eb;
+    padding: 12px;
+}
+
+.feature-matrix th {
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.feature-matrix tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+.star-rating {
+    color: #fbbf24;
+    font-size: 1.1em;
+}
+
+.pro-con-list {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 8px 0;
+}
+
+.pro-item {
+    color: #059669;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.con-item {
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.section-divider {
+    height: 2px;
+    background: linear-gradient(90deg, #3B82F6, #8B5CF6, #06B6D4);
+    margin: 2rem 0;
+    border-radius: 1px;
+}
+
+.recommendation-box {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border-left: 4px solid #10b981;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <nav class="text-blue-200 text-sm mb-4">
+                <a href="{% url 'core:home' %}" class="hover:text-white">Home</a>
+                <span class="mx-2">/</span>
+                <a href="{% url 'tools:comparison_list' %}" class="hover:text-white">Comparisons</a>
+                <span class="mx-2">/</span>
+                <span class="text-white">{{ comparison.title }}</span>
+            </nav>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ comparison.title }}</h1>
+            <p class="text-xl text-blue-100 max-w-4xl mx-auto">
+                {{ comparison.description }}
+            </p>
+            <div class="mt-6 flex justify-center space-x-4">
+                <span class="bg-blue-500 bg-opacity-20 text-blue-100 px-3 py-1 rounded-full text-sm">
+                    <i class="fas fa-eye mr-1"></i>{{ comparison.view_count }} views
+                </span>
+                <span class="bg-blue-500 bg-opacity-20 text-blue-100 px-3 py-1 rounded-full text-sm">
+                    <i class="fas fa-calendar mr-1"></i>{{ comparison.updated_at|date:"M j, Y" }}
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tools Overview -->
+<section class="py-12 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Tools Compared</h2>
+        <div class="grid grid-cols-1 md:grid-cols-{{ tools|length }} gap-6">
+            {% for tool in tools %}
+            <div class="tool-card bg-white rounded-lg shadow-md p-6 text-center">
+                {% if tool.logo %}
+                <img src="{{ tool.logo.url }}" alt="{{ tool.name }} logo" class="w-16 h-16 mx-auto mb-4 rounded">
+                {% else %}
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-tools text-2xl text-white"></i>
+                </div>
+                {% endif %}
+                <h3 class="text-xl font-bold text-gray-900 mb-2">{{ tool.name }}</h3>
+                <p class="text-gray-600 text-sm mb-4">{{ tool.tagline|default:tool.description|truncatewords:15 }}</p>
+                
+                <div class="mb-4">
+                    <div class="flex items-center justify-center mb-2">
+                        <span class="star-rating">
+                            {% for i in "12345" %}
+                            {% if forloop.counter <= tool.rating_average|floatformat:0 %}
+                            <i class="fas fa-star"></i>
+                            {% else %}
+                            <i class="far fa-star"></i>
+                            {% endif %}
+                            {% endfor %}
+                        </span>
+                        <span class="ml-2 text-sm text-gray-600">({{ tool.rating_count }} reviews)</span>
+                    </div>
+                    
+                    <div class="flex justify-center space-x-4 text-sm text-gray-500">
+                        <span class="bg-gray-100 px-2 py-1 rounded">{{ tool.pricing_model|title }}</span>
+                        <span class="bg-gray-100 px-2 py-1 rounded">{{ tool.category.name }}</span>
+                    </div>
+                </div>
+                
+                <a href="{{ tool.get_absolute_url }}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Learn More
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Introduction -->
+{% if comparison.introduction %}
+<section class="py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-sm p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Introduction</h2>
+            <div class="prose max-w-none text-gray-700">
+                {{ comparison.introduction|linebreaks }}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Summary Comparison Table -->
+{% if comparison.summary_table %}
+<section class="py-12 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Quick Comparison</h2>
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full feature-matrix">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Feature</th>
+                            {% for tool in tools %}
+                            <th class="text-center">{{ tool.name }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feature, values in comparison.summary_table.items %}
+                        <tr>
+                            <td class="font-semibold">{{ feature }}</td>
+                            {% for tool in tools %}
+                            <td class="text-center">{{ values|lookup:tool.name|lower }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Feature Matrix -->
+{% if comparison.feature_matrix %}
+<section class="py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Feature Comparison Matrix</h2>
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full feature-matrix">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Feature</th>
+                            {% for tool in tools %}
+                            <th class="text-center">{{ tool.name }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feature, ratings in comparison.feature_matrix.items %}
+                        <tr>
+                            <td class="font-semibold">{{ feature }}</td>
+                            {% for tool in tools %}
+                            <td class="text-center star-rating">{{ ratings|lookup:tool.name|lower }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="mt-4 text-center text-sm text-gray-600">
+            <i class="fas fa-star text-yellow-400"></i> Rating scale: ⭐ = Poor, ⭐⭐⭐ = Good, ⭐⭐⭐⭐⭐ = Excellent
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Detailed Sections -->
+{% if comparison.sections %}
+<section class="py-12 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Detailed Analysis</h2>
+        
+        {% for section_name, section_data in comparison.sections.items %}
+        <div class="comparison-section bg-white rounded-lg shadow-sm p-8 mb-8">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">{{ section_name }}</h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-{{ tools|length }} gap-8">
+                {% for tool in tools %}
+                {% with tool_data=section_data|lookup:tool.name|lower %}
+                {% if tool_data %}
+                <div class="border border-gray-200 rounded-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded flex items-center justify-center mr-3">
+                            <i class="fas fa-tools text-white text-sm"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-900">{{ tool.name }}</h4>
+                    </div>
+                    
+                    {% if tool_data.description %}
+                    <p class="text-gray-700 mb-4 font-medium">{{ tool_data.description }}</p>
+                    {% endif %}
+                    
+                    {% if tool_data.details %}
+                    <ul class="mb-4">
+                        {% for detail in tool_data.details %}
+                        <li class="text-gray-600 text-sm mb-2 flex items-start">
+                            <i class="fas fa-check-circle text-blue-500 mr-2 mt-1 text-xs"></i>
+                            {{ detail }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    
+                    {% if tool_data.pros or tool_data.cons %}
+                    <div class="pro-con-list">
+                        {% if tool_data.pros %}
+                        <div class="mb-3">
+                            <h5 class="font-semibold text-green-700 mb-2">Advantages</h5>
+                            {% for pro in tool_data.pros %}
+                            <div class="pro-item">
+                                <i class="fas fa-plus-circle mr-2"></i>
+                                <span class="text-sm">{{ pro }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if tool_data.cons %}
+                        <div>
+                            <h5 class="font-semibold text-red-700 mb-2">Limitations</h5>
+                            {% for con in tool_data.cons %}
+                            <div class="con-item">
+                                <i class="fas fa-minus-circle mr-2"></i>
+                                <span class="text-sm">{{ con }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Use Case Recommendations -->
+{% if comparison.use_case_recommendations %}
+<section class="py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">When to Choose Each Tool</h2>
+        
+        {% for recommendation_title, recommendations in comparison.use_case_recommendations.items %}
+        <div class="recommendation-box">
+            <h3 class="text-xl font-bold text-green-800 mb-4">
+                <i class="fas fa-lightbulb mr-2"></i>{{ recommendation_title }}
+            </h3>
+            <ul class="space-y-2">
+                {% for recommendation in recommendations %}
+                <li class="flex items-start text-green-700">
+                    <i class="fas fa-arrow-right mr-3 mt-1 text-green-600"></i>
+                    <span>{{ recommendation }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<div class="section-divider"></div>
+
+<!-- Conclusion and Recommendation -->
+<section class="py-12 bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {% if comparison.conclusion %}
+        <div class="bg-white rounded-lg shadow-sm p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-balance-scale mr-2 text-blue-600"></i>Conclusion
+            </h2>
+            <div class="prose max-w-none text-gray-700">
+                {{ comparison.conclusion|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if comparison.recommendation %}
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg p-8">
+            <h2 class="text-2xl font-bold mb-6">
+                <i class="fas fa-star mr-2"></i>Our Recommendation
+            </h2>
+            <div class="prose max-w-none text-blue-100">
+                {{ comparison.recommendation|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Tools Links -->
+<section class="py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">Explore These Tools</h2>
+        <div class="grid grid-cols-1 md:grid-cols-{{ tools|length }} gap-6">
+            {% for tool in tools %}
+            <div class="bg-white border border-gray-200 rounded-lg p-6 text-center hover:shadow-lg transition-shadow">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">{{ tool.name }}</h3>
+                <div class="space-y-2">
+                    {% if tool.website_url %}
+                    <a href="{{ tool.website_url }}" target="_blank" rel="noopener" class="block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-external-link-alt mr-2"></i>Official Website
+                    </a>
+                    {% endif %}
+                    {% if tool.github_url %}
+                    <a href="{{ tool.github_url }}" target="_blank" rel="noopener" class="block bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 transition-colors">
+                        <i class="fab fa-github mr-2"></i>GitHub Repository
+                    </a>
+                    {% endif %}
+                    <a href="{{ tool.get_absolute_url }}" class="block bg-gray-100 text-gray-800 px-4 py-2 rounded hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-info-circle mr-2"></i>Tool Details
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Related Comparisons -->
+<section class="py-12 bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">Related Comparisons</h2>
+        <div class="text-center">
+            <a href="{% url 'tools:comparison_list' %}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-list mr-2"></i>View All Comparisons
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add smooth scrolling for navigation
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
+    });
+});
+
+// Track view
+fetch("{% url 'tools:comparison_detail' slug=comparison.slug %}", {
+    method: 'POST',
+    headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({action: 'track_view'})
+});
+</script>
+{% endblock %}

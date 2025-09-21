@@ -11,6 +11,7 @@ urlpatterns = [
     # Tool categories and listings
     path('', views.category_list, name='category_list'),
     path('comparisons/', views.comparison_list, name='comparison_list'),
+    path('comparisons/<slug:slug>/', views.comparison_detail, name='comparison_detail'),
     
     # AI Integration endpoints
     path('api/<int:tool_id>/generate-content/', ai_integration.generate_tool_content, name='generate_tool_content'),

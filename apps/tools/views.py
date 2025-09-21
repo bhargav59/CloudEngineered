@@ -111,6 +111,52 @@ class ToolDetailView(DetailView):
         return context
 
 
+class ComparisonDetailView(DetailView):
+    """Display a single tool comparison."""
+    model = ToolComparison
+    template_name = 'tools/comparison_detail.html'
+    context_object_name = 'comparison'
+    
+    def get_queryset(self):
+        return ToolComparison.objects.filter(
+            is_published=True
+        ).prefetch_related('tools__reviews', 'tools__category')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        comparison = self.get_object()
+        
+        # Get tools in comparison
+        tools = comparison.tools.all()
+        context['tools'] = tools
+        
+        # Add comparison table data
+        comparison_data = []
+        if tools.exists():
+            # Basic info comparison
+            comparison_data.append({
+                'criteria': 'Pricing Model',
+                'values': [tool.get_pricing_model_display() for tool in tools]
+            })
+            comparison_data.append({
+                'criteria': 'GitHub Stars',
+                'values': [f"{tool.github_stars:,}" if tool.github_stars else 'N/A' for tool in tools]
+            })
+            comparison_data.append({
+                'criteria': 'Status',
+                'values': [tool.get_status_display() for tool in tools]
+            })
+            comparison_data.append({
+                'criteria': 'Supported Platforms',
+                'values': [', '.join(tool.supported_platforms[:3]) if tool.supported_platforms else 'N/A' for tool in tools]
+            })
+            
+        context['comparison_data'] = comparison_data
+        context['page_title'] = comparison.title
+        context['page_description'] = comparison.description
+        return context
+
+
 class ComparisonListView(ListView):
     """Display tool comparisons."""
     model = ToolComparison
@@ -163,3 +209,8 @@ def comparison_list(request):
     """List tool comparisons."""
     view = ComparisonListView.as_view()
     return view(request)
+
+def comparison_detail(request, slug):
+    """Show comparison detail."""
+    view = ComparisonDetailView.as_view()
+    return view(request, slug=slug)

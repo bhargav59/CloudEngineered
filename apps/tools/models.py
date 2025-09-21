@@ -261,7 +261,37 @@ class ToolComparison(TimeStampedModel, SlugModel, SEOModel, PublishableModel, Vi
     conclusion = models.TextField(blank=True)
     recommendation = models.TextField(blank=True)
     
-    # Comparison criteria
+    # Detailed comparison sections
+    sections = models.JSONField(
+        default=dict,
+        help_text="Structured comparison sections with detailed analysis"
+    )
+    
+    # Feature comparison matrix
+    feature_matrix = models.JSONField(
+        default=dict,
+        help_text="Feature comparison matrix with detailed scoring"
+    )
+    
+    # Pros and cons for each tool
+    tool_analysis = models.JSONField(
+        default=dict,
+        help_text="Detailed analysis for each tool including pros/cons"
+    )
+    
+    # Use case recommendations
+    use_case_recommendations = models.JSONField(
+        default=dict,
+        help_text="Specific use cases and recommendations for each tool"
+    )
+    
+    # Summary table data
+    summary_table = models.JSONField(
+        default=dict,
+        help_text="Summary comparison table data"
+    )
+    
+    # Comparison criteria (kept for backward compatibility)
     criteria = models.JSONField(
         default=list,
         help_text="List of comparison criteria (features, pricing, etc.)"

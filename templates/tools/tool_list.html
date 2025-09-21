@@ -146,7 +146,7 @@
                     
                     <!-- Actions -->
                     <div class="flex gap-2">
-                        <a href="{% url 'tools:tool_detail' slug=tool.slug %}" 
+                        <a href="{% url 'tools:tool_detail' category=tool.category.slug slug=tool.slug %}" 
                            class="flex-1 text-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                             View Details
                         </a>

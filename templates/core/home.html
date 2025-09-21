@@ -154,7 +154,7 @@
                     </div>
                     
                     <div class="flex space-x-2">
-                        <a href="{% url 'tools:tool_detail' tool.category.slug tool.slug %}" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-center font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200">
+                        <a href="{% url 'tools:tool_detail' category=tool.category.slug slug=tool.slug %}" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-center font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200">
                             View Details
                         </a>
                         {% if tool.website_url %}
