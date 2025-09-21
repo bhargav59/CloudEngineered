@@ -3,12 +3,22 @@ Unified AI Service Manager for CloudEngineered platform.
 Provides flexible access to multiple AI providers with automatic fallback.
 """
 
-import openai
-import anthropic
 import json
 import logging
 from typing import Dict, List, Any, Optional
 from django.conf import settings
+
+# Conditional imports for AI packages
+try:
+    import openai
+except ImportError:
+    openai = None
+
+try:
+    import anthropic
+except ImportError:
+    anthropic = None
+
 from apps.ai.openrouter_service import OpenRouterService
 
 logger = logging.getLogger(__name__)
@@ -31,18 +41,18 @@ class AIServiceManager:
         except Exception as e:
             logger.warning(f"OpenRouter service initialization failed: {e}")
         
-        # Initialize direct OpenAI client if API key is available
+        # Initialize direct OpenAI client if API key is available and openai package is installed
         self.openai_client = None
-        if hasattr(settings, 'OPENAI_API_KEY') and settings.OPENAI_API_KEY:
+        if openai and hasattr(settings, 'OPENAI_API_KEY') and settings.OPENAI_API_KEY:
             try:
                 self.openai_client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
                 logger.info("Direct OpenAI client initialized successfully")
             except Exception as e:
                 logger.warning(f"Direct OpenAI client initialization failed: {e}")
         
-        # Initialize direct Anthropic client if API key is available
+        # Initialize direct Anthropic client if API key is available and anthropic package is installed
         self.anthropic_client = None
-        if hasattr(settings, 'ANTHROPIC_API_KEY') and settings.ANTHROPIC_API_KEY:
+        if anthropic and hasattr(settings, 'ANTHROPIC_API_KEY') and settings.ANTHROPIC_API_KEY:
             try:
                 self.anthropic_client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
                 logger.info("Direct Anthropic client initialized successfully")

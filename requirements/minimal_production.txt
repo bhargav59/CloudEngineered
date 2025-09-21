@@ -1,0 +1,52 @@
+# Minimal Production Requirements - CloudEngineered
+# Core Django Framework
+Django==4.2.7
+djangorestframework==3.14.0
+django-filter==23.3.0
+django-extensions==3.2.3
+
+# Database
+psycopg2-binary==2.9.9
+dj-database-url==2.1.0
+
+# Cache & Sessions
+redis==5.0.1
+django-redis==5.4.0
+
+# Security & Authentication
+django-cors-headers==4.3.1
+django-ratelimit==4.1.0
+
+# Static Files & Storage
+whitenoise==6.6.0
+django-storages[s3]==1.14.2
+
+# Forms & Templates
+django-crispy-forms==2.1
+
+# Task Queue
+celery==5.3.4
+
+# Environment Variables
+python-decouple==3.8
+django-environ==0.11.2
+
+# OpenRouter AI Integration
+httpx==0.25.2
+pydantic==2.5.0
+
+# Web Scraping & Content
+beautifulsoup4==4.12.2
+requests==2.31.0
+
+# Production Server
+gunicorn==21.2.0
+
+# Monitoring (Optional but recommended)
+sentry-sdk[django]==1.38.0
+
+# Development Tools (Only install when needed)
+# pytest==7.4.3
+# pytest-django==4.7.0
+# black==23.11.0
+# flake8==6.1.0

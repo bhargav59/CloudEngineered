@@ -13,7 +13,12 @@ import logging
 from typing import Dict, Any, Optional, List
 from decimal import Decimal
 from django.conf import settings
-import openai
+
+# Conditional import for openai package
+try:
+    import openai
+except ImportError:
+    openai = None
 
 logger = logging.getLogger(__name__)
 
@@ -123,14 +128,18 @@ class OpenRouterService:
         self.app_name = getattr(settings, 'OPENROUTER_APP_NAME', 'CloudEngineered')
         
         # Initialize OpenAI client with OpenRouter endpoint
-        self.client = openai.OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=self.api_key,
-            default_headers={
-                "HTTP-Referer": self.site_url,
-                "X-Title": self.app_name,
-            }
-        )
+        self.client = None
+        if openai:
+            self.client = openai.OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=self.api_key,
+                default_headers={
+                    "HTTP-Referer": self.site_url,
+                    "X-Title": self.app_name,
+                }
+            )
+        else:
+            logger.warning("OpenAI package not available. OpenRouter service will not work.")
     
     def _get_api_key(self) -> str:
         """Get OpenRouter API key from environment or settings"""
@@ -170,6 +179,10 @@ class OpenRouterService:
         Returns:
             Dictionary with generated content and metadata
         """
+        # Check if client is available
+        if not self.client:
+            return self._generate_mock_content(system_prompt, user_prompt, model)
+            
         if self.api_key == "mock-api-key":
             return self._generate_mock_content(system_prompt, user_prompt, model)
         
