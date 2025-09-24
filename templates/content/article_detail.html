@@ -12,7 +12,7 @@
     "@type": "Article",
     "headline": "{{ article.title }}",
     "description": "{{ article.excerpt|default:article.meta_description }}",
-    "image": "{% if article.featured_image %}{{ request.scheme }}://{{ request.get_host }}{{ article.featured_image.url }}{% else %}{% load static %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo-social.png' %}{% endif %}",
+    "image": "{% if article.featured_image %}{{ request.scheme }}://{{ request.get_host }}{{ article.featured_image.url }}{% endif %}",,
     "author": {
         "@type": "Person",
         "name": "{{ article.author_name|default:article.author.get_full_name|default:article.author.username }}"
@@ -22,7 +22,7 @@
         "name": "{{ site_name }}",
         "logo": {
             "@type": "ImageObject",
-            "url": "{% load static %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo-social.png' %}"
+            "url": ""
         }
     },
     "datePublished": "{{ article.published_at|date:'c' }}",

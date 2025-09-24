@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,21 +15,20 @@
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
     <meta property="og:title" content="{% block og_title %}{{ site_name }}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{{ site_config.default_meta_description }}{% endblock %}">
-    <meta property="og:image" content="{% block og_image %}{% load static %}{% static 'images/logo-social.png' %}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% endblock %}">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="{{ request.build_absolute_uri }}">
     <meta property="twitter:title" content="{% block twitter_title %}{{ site_name }}{% endblock %}">
     <meta property="twitter:description" content="{% block twitter_description %}{{ site_config.default_meta_description }}{% endblock %}">
-    <meta property="twitter:image" content="{% block twitter_image %}{% load static %}{% static 'images/logo-social.png' %}{% endblock %}">
+    <meta property="twitter:image" content="{% block twitter_image %}{% endblock %}">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
+    <!-- <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}"> -->
+    <!-- <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}"> -->>
     
     <!-- CSS -->
-    {% load static %}
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="{% static 'css/main.css' %}" rel="stylesheet">
     {% block extra_css %}{% endblock %}
@@ -58,7 +58,7 @@
         "name": "{{ site_name }}",
         "description": "{{ site_config.default_meta_description }}",
         "url": "{{ site_config.site_url|default:'https://cloudengineered.com' }}",
-        "logo": "{% load static %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo-social.png' %}",
+        "logo": "",,
         "sameAs": [
             {% if site_config.twitter_url %}"{{ site_config.twitter_url }}"{% endif %}
             {% if site_config.linkedin_url %}{% if site_config.twitter_url %},{% endif %}"{{ site_config.linkedin_url }}"{% endif %}

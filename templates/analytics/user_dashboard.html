@@ -228,7 +228,7 @@
                             {% endif %}
                         </div>
                         <div class="flex-1">
-                            <div class="font-medium text-gray-900">{{ engagement.event_type|title|replace:"_":" " }}</div>
+                            <div class="font-medium text-gray-900">{{ engagement.event_type|title|cut:"_" }}</div>
                             <div class="text-sm text-gray-500">{{ engagement.count }} times</div>
                         </div>
                     </div>

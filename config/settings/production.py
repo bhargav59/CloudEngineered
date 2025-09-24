@@ -3,6 +3,7 @@ Production settings for CloudEngineered platform - Render deployment.
 """
 
 from .base import *
+from django.core.management.utils import get_random_secret_key
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -12,17 +13,48 @@ import os
 # Security
 DEBUG = False
 
+# Generate a secure SECRET_KEY for production
+SECRET_KEY = config('SECRET_KEY', default='CHANGE_ME_IN_PRODUCTION_' + get_random_secret_key())
+
+# Security settings for production
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_SSL_REDIRECT = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# Cookie security
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Strict'
+CSRF_COOKIE_SAMESITE = 'Strict'
+
 # Railway provides PORT environment variable
 PORT = int(os.getenv('PORT', 8000))
 
 # Railway database configuration
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Fallback to SQLite for local production testing
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
 # Railway Redis configuration
 REDIS_URL = os.getenv('REDIS_URL')
@@ -119,12 +151,13 @@ LOGGING = {
 }
 
 # Sentry Error Tracking
-if config('SENTRY_DSN', default=''):
+SENTRY_DSN = config('SENTRY_DSN', default='')
+if SENTRY_DSN:
     sentry_sdk.init(
-        dsn=config('SENTRY_DSN'),
+        dsn=SENTRY_DSN,
         integrations=[
-            DjangoIntegration(auto_enabling=True),
-            CeleryIntegration(auto_enabling=True),
+            DjangoIntegration(),
+            CeleryIntegration(),
         ],
         traces_sample_rate=0.1,
         send_default_pii=True,
@@ -151,8 +184,10 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
 
 # Production logging
-LOGGING['handlers']['file']['level'] = 'ERROR'
-LOGGING['handlers']['console']['level'] = 'ERROR'
+if 'file' in LOGGING['handlers']:
+    LOGGING['handlers']['file']['level'] = 'ERROR'
+if 'console' in LOGGING['handlers']:
+    LOGGING['handlers']['console']['level'] = 'ERROR'
 
 # Disable unnecessary features in production
 ALLOWED_INCLUDE_ROOTS = []

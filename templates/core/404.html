@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Page Not Found - CloudEngineered{% endblock %}
+
+{% block extra_head %}
+<style>
+    .error-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+    }
+    .error-content {
+        max-width: 600px;
+        padding: 2rem;
+    }
+    .error-code {
+        font-size: 8rem;
+        font-weight: 900;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .error-message {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+    }
+    .error-description {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        opacity: 0.8;
+        line-height: 1.6;
+    }
+    .btn-home {
+        background: rgba(255,255,255,0.2);
+        border: 2px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-block;
+        margin: 0 10px;
+    }
+    .btn-home:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+    .search-form {
+        margin-top: 2rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .search-input {
+        width: 100%;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1rem;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        placeholder-color: rgba(255,255,255,0.7);
+    }
+    .search-input::placeholder {
+        color: rgba(255,255,255,0.7);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-code">404</div>
+        <h1 class="error-message">Page Not Found</h1>
+        <p class="error-description">
+            Oops! The page you're looking for seems to have wandered off into the digital void. 
+            Don't worry though - even the best developers sometimes create links to nowhere.
+        </p>
+        
+        <div>
+            <a href="{% url 'core:home' %}" class="btn-home">
+                <i class="fas fa-home"></i> Go Home
+            </a>
+            <a href="{% url 'tools:tool_list' %}" class="btn-home">
+                <i class="fas fa-tools"></i> Browse Tools
+            </a>
+        </div>
+        
+        <form class="search-form" action="{% url 'core:search' %}" method="get">
+            <input type="text" name="q" class="search-input" placeholder="Search for tools, guides, or content...">
+        </form>
+    </div>
+</div>
+{% endblock %}
