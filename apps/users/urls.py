@@ -4,6 +4,9 @@ from . import views
 app_name = 'users'
 
 urlpatterns = [
+    # Authentication
+    path('register/', views.register_view, name='register'),
+    
     # Dashboard
     path('dashboard/', views.UserDashboardView.as_view(), name='dashboard'),
     

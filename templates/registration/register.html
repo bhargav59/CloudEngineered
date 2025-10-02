@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md mx-auto">
+        <!-- Logo and Header -->
+        <div class="text-center mb-8">
+            <a href="{% url 'core:home' %}" class="inline-block">
+                <h1 class="text-4xl font-bold text-blue-600">CloudEngineered</h1>
+            </a>
+            <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+                Create your account
+            </h2>
+            <p class="mt-2 text-sm text-gray-600">
+                Already have an account?
+                <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-500">
+                    Sign in here
+                </a>
+            </p>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="bg-white py-8 px-6 shadow-xl rounded-lg">
+            {% if form.errors %}
+            <div class="mb-4 bg-red-50 border-l-4 border-red-400 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700 font-medium">Please correct the errors below:</p>
+                        <ul class="mt-2 text-sm text-red-600 list-disc list-inside">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                <li>{{ field|title }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'users:register' %}" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Username Field -->
+                <div>
+                    <label for="id_username" class="block text-sm font-medium text-gray-700">
+                        Username <span class="text-red-500">*</span>
+                    </label>
+                    <div class="mt-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                        {{ form.username }}
+                    </div>
+                    {% if form.username.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.username.errors.0 }}</p>
+                    {% elif form.username.help_text %}
+                    <p class="mt-2 text-sm text-gray-500">{{ form.username.help_text }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Email Field -->
+                <div>
+                    <label for="id_email" class="block text-sm font-medium text-gray-700">
+                        Email Address <span class="text-red-500">*</span>
+                    </label>
+                    <div class="mt-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400"></i>
+                        </div>
+                        {{ form.email }}
+                    </div>
+                    {% if form.email.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label for="id_password1" class="block text-sm font-medium text-gray-700">
+                        Password <span class="text-red-500">*</span>
+                    </label>
+                    <div class="mt-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        {{ form.password1 }}
+                    </div>
+                    {% if form.password1.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.password1.errors.0 }}</p>
+                    {% elif form.password1.help_text %}
+                    <div class="mt-2 text-sm text-gray-500">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>At least 8 characters long</li>
+                            <li>Not entirely numeric</li>
+                            <li>Not too common</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div>
+                    <label for="id_password2" class="block text-sm font-medium text-gray-700">
+                        Confirm Password <span class="text-red-500">*</span>
+                    </label>
+                    <div class="mt-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        {{ form.password2 }}
+                    </div>
+                    {% if form.password2.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.password2.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Terms and Privacy -->
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
+                        <input 
+                            id="terms" 
+                            name="terms" 
+                            type="checkbox" 
+                            required
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        >
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="terms" class="font-medium text-gray-700">
+                            I agree to the 
+                            <a href="{% url 'core:terms' %}" target="_blank" class="text-blue-600 hover:text-blue-500">Terms of Service</a>
+                            and 
+                            <a href="{% url 'core:privacy' %}" target="_blank" class="text-blue-600 hover:text-blue-500">Privacy Policy</a>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <button 
+                        type="submit" 
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    >
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Create Account
+                    </button>
+                </div>
+            </form>
+
+            <!-- Social Registration (Optional) -->
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Or sign up with</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-2 gap-3">
+                    <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <i class="fab fa-github text-xl"></i>
+                    </a>
+                    <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <i class="fab fa-google text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-blue-900 mb-2">
+                <i class="fas fa-gift mr-2"></i>What you get with free account:
+            </h3>
+            <ul class="text-sm text-blue-700 space-y-1">
+                <li><i class="fas fa-check mr-2"></i>Access to 100+ cloud engineering tools</li>
+                <li><i class="fas fa-check mr-2"></i>Read tool comparisons and reviews</li>
+                <li><i class="fas fa-check mr-2"></i>Save your favorite tools</li>
+                <li><i class="fas fa-check mr-2"></i>Join community discussions</li>
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add proper classes to form fields
+document.addEventListener('DOMContentLoaded', function() {
+    const formInputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+    formInputs.forEach(input => {
+        input.className = 'appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm';
+    });
+});
+
+// Password strength indicator
+const password1 = document.getElementById('id_password1');
+if (password1) {
+    password1.addEventListener('input', function() {
+        const strength = calculatePasswordStrength(this.value);
+        // Add visual feedback for password strength
+    });
+}
+
+function calculatePasswordStrength(password) {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.match(/[a-z]+/)) strength++;
+    if (password.match(/[A-Z]+/)) strength++;
+    if (password.match(/[0-9]+/)) strength++;
+    if (password.match(/[$@#&!]+/)) strength++;
+    return strength;
+}
+</script>
+{% endblock %}

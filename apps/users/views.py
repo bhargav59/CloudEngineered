@@ -5,16 +5,74 @@ User views for CloudEngineered platform.
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DetailView, UpdateView, ListView
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.views.generic import DetailView, UpdateView, ListView, CreateView
 from django.contrib import messages
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.utils import timezone
+from django import forms
 
 from .models import User, UserProfile, UserActivity, UserBookmark, UserPreferences, UserSubscription
 from apps.tools.models import Tool, ToolReview
 from apps.content.models import Article
+
+
+class UserRegistrationForm(UserCreationForm):
+    """Custom registration form."""
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'your.email@example.com'
+        })
+    )
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Choose a username'
+        })
+    )
+    
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('This email address is already registered.')
+        return email
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+            # Create user profile
+            UserProfile.objects.create(user=user)
+            UserPreferences.objects.create(user=user)
+        return user
+
+
+def register_view(request):
+    """User registration view."""
+    if request.user.is_authenticated:
+        return redirect('users:dashboard')
+    
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Log the user in
+            login(request, user)
+            messages.success(request, f'Welcome to CloudEngineered, {user.username}! Your account has been created successfully.')
+            return redirect('users:dashboard')
+    else:
+        form = UserRegistrationForm()
+    
+    return render(request, 'registration/register.html', {'form': form})
 
 
 class UserDashboardView(LoginRequiredMixin, DetailView):
