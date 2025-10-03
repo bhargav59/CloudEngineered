@@ -89,6 +89,7 @@
                     <a href="{% url 'tools:category_list' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Tools</a>
                     <a href="{% url 'content:article_list' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Articles</a>
                     <a href="{% url 'tools:comparison_list' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Comparisons</a>
+                    <a href="{% url 'tools:comparison_bot' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">🤖 AI Compare</a>
                     <a href="{% url 'core:about' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">About</a>
                     {% if user.is_staff or user.is_superuser %}
                         <a href="{% url 'analytics:dashboard' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Analytics</a>
@@ -185,6 +186,7 @@
                         <li><a href="{% url 'tools:category_list' %}" class="text-gray-400 hover:text-white">Tools</a></li>
                         <li><a href="{% url 'content:article_list' %}" class="text-gray-400 hover:text-white">Articles</a></li>
                         <li><a href="{% url 'tools:comparison_list' %}" class="text-gray-400 hover:text-white">Comparisons</a></li>
+                        <li><a href="{% url 'tools:comparison_bot' %}" class="text-gray-400 hover:text-white">🤖 AI Compare</a></li>
                         <li><a href="{% url 'core:about' %}" class="text-gray-400 hover:text-white">About</a></li>
                     </ul>
                 </div>
@@ -205,6 +207,9 @@
             </div>
         </div>
     </footer>
+
+    <!-- Newsletter Modal -->
+    {% include "core/newsletter_modal.html" %}
 
     <!-- JavaScript at footer -->
 </body>

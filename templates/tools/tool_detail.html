@@ -47,10 +47,10 @@
                 </div>
                 
                 <!-- Tags -->
-                {% if tool.tags.all %}
+                {% if tool.tags %}
                 <div class="flex flex-wrap gap-2 mb-6">
-                    {% for tag in tool.tags.all %}
-                    <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">{{ tag.name }}</span>
+                    {% for tag in tool.tags %}
+                    <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">{{ tag }}</span>
                     {% endfor %}
                 </div>
                 {% endif %}
@@ -78,22 +78,22 @@
                     
                     <!-- Actions -->
                     <div class="space-y-3">
-                        {% if tool.website %}
-                        <a href="{{ tool.website }}" target="_blank" 
+                        {% if tool.website_url %}
+                        <a href="{{ tool.website_url }}" target="_blank" 
                            class="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
                             <i class="fas fa-external-link-alt mr-2"></i>Visit Website
                         </a>
                         {% endif %}
                         
-                        {% if tool.documentation %}
-                        <a href="{{ tool.documentation }}" target="_blank" 
+                        {% if tool.documentation_url %}
+                        <a href="{{ tool.documentation_url }}" target="_blank" 
                            class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
                             <i class="fas fa-book mr-2"></i>Documentation
                         </a>
                         {% endif %}
                         
-                        {% if tool.github %}
-                        <a href="{{ tool.github }}" target="_blank" 
+                        {% if tool.github_url %}
+                        <a href="{{ tool.github_url }}" target="_blank" 
                            class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
                             <i class="fab fa-github mr-2"></i>View on GitHub
                         </a>
@@ -126,29 +126,133 @@
             <!-- Main Content -->
             <div class="lg:col-span-2">
                 <!-- Description -->
-                {% if tool.long_description %}
+                {% if tool.detailed_description %}
                 <div class="mb-8">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
                     <div class="prose max-w-none">
-                        {{ tool.long_description|linebreaks }}
+                        {{ tool.detailed_description|safe|linebreaks }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
+                    <div class="prose max-w-none">
+                        <p class="text-gray-700">{{ tool.description }}</p>
                     </div>
                 </div>
                 {% endif %}
                 
                 <!-- Features -->
-                {% if tool.features.all %}
+                {% if tool.features %}
                 <div class="mb-8">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Key Features</h2>
                     <ul class="space-y-2">
-                        {% for feature in tool.features.all %}
+                        {% for feature in tool.features %}
                         <li class="flex items-start">
                             <i class="fas fa-check text-green-600 mt-1 mr-3"></i>
-                            <span>{{ feature.name }}</span>
+                            <span>{{ feature }}</span>
                         </li>
                         {% endfor %}
                     </ul>
                 </div>
                 {% endif %}
+                
+                <!-- Pros and Cons -->
+                {% if tool.pros or tool.cons %}
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Pros & Cons</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        {% if tool.pros %}
+                        <div>
+                            <h3 class="text-lg font-semibold text-green-600 mb-3">Pros</h3>
+                            <ul class="space-y-2">
+                                {% for pro in tool.pros %}
+                                <li class="flex items-start">
+                                    <i class="fas fa-plus-circle text-green-600 mt-1 mr-3"></i>
+                                    <span class="text-gray-700">{{ pro }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        {% if tool.cons %}
+                        <div>
+                            <h3 class="text-lg font-semibold text-red-600 mb-3">Cons</h3>
+                            <ul class="space-y-2">
+                                {% for con in tool.cons %}
+                                <li class="flex items-start">
+                                    <i class="fas fa-minus-circle text-red-600 mt-1 mr-3"></i>
+                                    <span class="text-gray-700">{{ con }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Use Cases -->
+                {% if tool.use_cases %}
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Common Use Cases</h2>
+                    <ul class="space-y-2">
+                        {% for use_case in tool.use_cases %}
+                        <li class="flex items-start">
+                            <i class="fas fa-lightbulb text-yellow-500 mt-1 mr-3"></i>
+                            <span class="text-gray-700">{{ use_case|safe }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <!-- Integrations -->
+                {% if tool.integrations %}
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Integrations</h2>
+                    <div class="flex flex-wrap gap-2">
+                        {% for integration in tool.integrations %}
+                        <span class="px-3 py-2 bg-blue-50 text-blue-700 text-sm rounded-lg border border-blue-200">
+                            <i class="fas fa-plug mr-2"></i>{{ integration }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Deployment & Platform Info -->
+                <div class="mb-8 grid md:grid-cols-2 gap-6">
+                    {% if tool.supported_platforms %}
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-cloud mr-2 text-blue-600"></i>Supported Platforms
+                        </h3>
+                        <div class="flex flex-wrap gap-2">
+                            {% for platform in tool.supported_platforms %}
+                            <span class="px-3 py-1 bg-white text-gray-700 text-sm rounded border border-gray-200">
+                                {{ platform }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if tool.deployment_types %}
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-server mr-2 text-green-600"></i>Deployment Options
+                        </h3>
+                        <div class="flex flex-wrap gap-2">
+                            {% for deployment in tool.deployment_types %}
+                            <span class="px-3 py-1 bg-white text-gray-700 text-sm rounded border border-gray-200">
+                                {{ deployment }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
                 
                 <!-- Reviews -->
                 <div class="mb-8">

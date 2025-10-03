@@ -157,6 +157,118 @@ class Tool(TimeStampedModel, SlugModel, SEOModel, PublishableModel, ViewCountMod
     github_forks = models.PositiveIntegerField(default=0)
     github_last_commit = models.DateTimeField(null=True, blank=True)
     github_issues = models.PositiveIntegerField(default=0)
+    github_open_issues = models.PositiveIntegerField(default=0)
+    github_closed_issues = models.PositiveIntegerField(default=0)
+    github_pull_requests = models.PositiveIntegerField(default=0)
+    github_contributors = models.PositiveIntegerField(default=0)
+    github_watchers = models.PositiveIntegerField(default=0)
+    github_release_count = models.PositiveIntegerField(default=0)
+    github_latest_release = models.CharField(max_length=100, blank=True)
+    github_latest_release_date = models.DateTimeField(null=True, blank=True)
+    github_created_at = models.DateTimeField(null=True, blank=True)
+    github_updated_at = models.DateTimeField(null=True, blank=True)
+    github_stats_last_updated = models.DateTimeField(null=True, blank=True)
+    
+    # Performance Metrics
+    performance_score = models.FloatField(
+        default=0.0,
+        help_text="Overall performance score (0-100)"
+    )
+    performance_metrics = models.JSONField(
+        default=dict,
+        help_text="Performance benchmarks: response_time_ms, throughput, uptime_percentage, etc."
+    )
+    
+    # Documentation & Support
+    documentation_url = models.URLField(blank=True)
+    documentation_quality = models.CharField(
+        max_length=20,
+        choices=[
+            ('excellent', 'Excellent'),
+            ('good', 'Good'),
+            ('fair', 'Fair'),
+            ('poor', 'Poor'),
+            ('none', 'None'),
+        ],
+        default='good'
+    )
+    api_documentation_url = models.URLField(blank=True)
+    changelog_url = models.URLField(blank=True)
+    
+    # Support Channels
+    support_channels = models.JSONField(
+        default=list,
+        help_text="Available support channels: email, chat, phone, forum, slack, discord, etc."
+    )
+    support_email = models.EmailField(blank=True)
+    community_forum_url = models.URLField(blank=True)
+    discord_url = models.URLField(blank=True)
+    slack_url = models.URLField(blank=True)
+    
+    # Pricing Details (Enhanced)
+    pricing_tiers = models.JSONField(
+        default=list,
+        help_text="Detailed pricing tiers with features: [{name, price, features, limits}]"
+    )
+    free_tier_available = models.BooleanField(default=False)
+    free_trial_days = models.PositiveIntegerField(null=True, blank=True)
+    
+    # Technical Details
+    tech_stack = models.JSONField(
+        default=list,
+        help_text="Technologies used: languages, frameworks, databases, etc."
+    )
+    api_available = models.BooleanField(default=False)
+    api_rate_limits = models.JSONField(
+        default=dict,
+        help_text="API rate limits and quotas"
+    )
+    
+    # Compliance & Security
+    security_features = models.JSONField(
+        default=list,
+        help_text="Security features: encryption, SSO, 2FA, audit logs, etc."
+    )
+    compliance_certifications = models.JSONField(
+        default=list,
+        help_text="Compliance certifications: SOC2, GDPR, HIPAA, ISO27001, etc."
+    )
+    
+    # Community Metrics
+    community_size = models.PositiveIntegerField(
+        default=0,
+        help_text="Estimated community size (users, contributors, forum members)"
+    )
+    stackoverflow_questions = models.PositiveIntegerField(default=0)
+    reddit_subscribers = models.PositiveIntegerField(default=0)
+    twitter_followers = models.PositiveIntegerField(default=0)
+    
+    # Media & Screenshots
+    screenshots = models.JSONField(
+        default=list,
+        help_text="List of screenshot URLs with captions"
+    )
+    demo_video_url = models.URLField(blank=True)
+    demo_url = models.URLField(
+        blank=True,
+        help_text="Live demo or playground URL"
+    )
+    
+    # Version & Release Info
+    current_version = models.CharField(max_length=50, blank=True)
+    release_frequency = models.CharField(
+        max_length=20,
+        choices=[
+            ('daily', 'Daily'),
+            ('weekly', 'Weekly'),
+            ('monthly', 'Monthly'),
+            ('quarterly', 'Quarterly'),
+            ('biannual', 'Twice a Year'),
+            ('annual', 'Annually'),
+            ('irregular', 'Irregular'),
+        ],
+        blank=True
+    )
     
     # Popularity and Status
     is_featured = models.BooleanField(default=False)
@@ -224,6 +336,13 @@ class Tool(TimeStampedModel, SlugModel, SEOModel, PublishableModel, ViewCountMod
     
     def get_absolute_url(self):
         return reverse('tools:tool_detail', kwargs={'category': self.category.slug, 'slug': self.slug})
+    
+    @property
+    def rating(self):
+        """Calculate average rating from rating_sum and rating_count."""
+        if self.rating_count > 0:
+            return round(self.rating_sum / self.rating_count, 1)
+        return 0.0
     
     @property
     def github_repo_name(self):
@@ -403,3 +522,144 @@ class ToolReview(TimeStampedModel, RatingModel):
         if total == 0:
             return 0
         return round(self.helpful_count / total, 2)
+
+
+# =============================================================================
+# AI COMPARISON BOT MODELS
+# =============================================================================
+
+class ComparisonRequest(TimeStampedModel):
+    """
+    Real-time AI-powered tool comparison requests from users.
+    Stores user queries and AI-generated comparison results.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+    
+    # Request details
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        related_name='comparison_requests'
+    )
+    session_id = models.CharField(
+        max_length=100, 
+        db_index=True,
+        help_text="Anonymous session ID for non-logged-in users"
+    )
+    
+    # Tools being compared
+    tool1 = models.ForeignKey(
+        'Tool',
+        on_delete=models.CASCADE,
+        related_name='comparisons_as_tool1'
+    )
+    tool2 = models.ForeignKey(
+        'Tool',
+        on_delete=models.CASCADE,
+        related_name='comparisons_as_tool2'
+    )
+    
+    # User query
+    user_query = models.TextField(
+        help_text="User's specific comparison question or requirements"
+    )
+    comparison_context = models.JSONField(
+        default=dict,
+        help_text="Additional context: use case, team size, budget, etc."
+    )
+    
+    # Processing
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='pending',
+        db_index=True
+    )
+    ai_model_used = models.CharField(
+        max_length=100, 
+        default='openai/gpt-4o-mini',
+        help_text="AI model used for generation"
+    )
+    processing_time = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="Time taken to generate comparison (seconds)"
+    )
+    
+    # AI-generated response
+    comparison_result = models.JSONField(
+        default=dict,
+        help_text="Structured AI-generated comparison data"
+    )
+    raw_response = models.TextField(
+        blank=True,
+        help_text="Raw AI response for debugging"
+    )
+    
+    # Metadata
+    tokens_used = models.IntegerField(default=0)
+    cost_estimate = models.DecimalField(
+        max_digits=10, 
+        decimal_places=6, 
+        default=0.0
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    
+    # Feedback
+    was_helpful = models.BooleanField(
+        null=True, 
+        blank=True,
+        help_text="User feedback on comparison quality"
+    )
+    feedback_comment = models.TextField(blank=True)
+    
+    class Meta:
+        verbose_name = 'AI Comparison Request'
+        verbose_name_plural = 'AI Comparison Requests'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['tool1', 'tool2', '-created_at']),
+            models.Index(fields=['status', '-created_at']),
+            models.Index(fields=['session_id', '-created_at']),
+            models.Index(fields=['user', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.tool1.name} vs {self.tool2.name} - {self.get_status_display()}"
+    
+    def get_comparison_title(self):
+        """Generate a title for this comparison."""
+        return f"{self.tool1.name} vs {self.tool2.name}"
+    
+    def mark_as_processing(self):
+        """Mark comparison as currently processing."""
+        self.status = 'processing'
+        self.save(update_fields=['status'])
+    
+    def mark_as_completed(self, result: dict, tokens: int = 0, time_taken: float = 0):
+        """Mark comparison as completed with results."""
+        self.status = 'completed'
+        self.comparison_result = result
+        self.tokens_used = tokens
+        self.processing_time = time_taken
+        self.save(update_fields=['status', 'comparison_result', 'tokens_used', 'processing_time'])
+    
+    def mark_as_failed(self, error_message: str):
+        """Mark comparison as failed with error message."""
+        self.status = 'failed'
+        self.comparison_result = {'error': error_message}
+        self.save(update_fields=['status', 'comparison_result'])
+    
+    def record_feedback(self, helpful: bool, comment: str = ''):
+        """Record user feedback on comparison quality."""
+        self.was_helpful = helpful
+        self.feedback_comment = comment
+        self.save(update_fields=['was_helpful', 'feedback_comment'])

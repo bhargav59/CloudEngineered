@@ -152,6 +152,15 @@ class ComparisonDetailView(DetailView):
             })
             
         context['comparison_data'] = comparison_data
+        
+        # Add related comparisons
+        related_comparisons = ToolComparison.objects.filter(
+            is_published=True
+        ).exclude(
+            id=comparison.id
+        ).order_by('-view_count')[:3]
+        context['related_comparisons'] = related_comparisons
+        
         context['page_title'] = comparison.title
         context['page_description'] = comparison.description
         return context

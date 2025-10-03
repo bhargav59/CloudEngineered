@@ -27,6 +27,10 @@ urlpatterns = [
     
     # Newsletter
     path('newsletter/subscribe/', views.NewsletterSubscribeView.as_view(), name='newsletter_subscribe'),
+    path('newsletter/verify/<str:token>/', views.NewsletterVerifyView.as_view(), name='newsletter_verify'),
+    path('newsletter/unsubscribe/<str:token>/', views.NewsletterUnsubscribeView.as_view(), name='newsletter_unsubscribe'),
+    path('newsletter/resubscribe/<str:token>/', views.NewsletterResubscribeView.as_view(), name='newsletter_resubscribe'),
+    path('newsletter/feedback/', views.NewsletterFeedbackView.as_view(), name='newsletter_feedback'),
     
     # Static pages
     path('about/', views.AboutView.as_view(), name='about'),

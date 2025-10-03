@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Unsubscribe - {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            {% if success %}
+                <!-- Success State -->
+                <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-yellow-100">
+                    <svg class="h-12 w-12 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+                    You've Been Unsubscribed
+                </h2>
+                <p class="mt-2 text-lg text-gray-600">
+                    We're sorry to see you go! 😢
+                </p>
+                
+                <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+                    <p class="text-gray-700 mb-4">
+                        You have been successfully unsubscribed from our newsletter at:
+                    </p>
+                    <p class="font-semibold text-gray-900 text-lg">{{ subscriber.email }}</p>
+                    
+                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 class="font-semibold text-blue-900 mb-2">We'd Love Your Feedback</h3>
+                        <p class="text-sm text-blue-800 mb-3">
+                            Help us improve! Why did you unsubscribe?
+                        </p>
+                        <form method="POST" action="{% url 'core:newsletter_feedback' %}" class="space-y-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="subscriber_token" value="{{ subscriber.verification_token }}">
+                            <label class="flex items-center text-sm text-gray-700">
+                                <input type="radio" name="reason" value="too_frequent" class="mr-2">
+                                Emails too frequent
+                            </label>
+                            <label class="flex items-center text-sm text-gray-700">
+                                <input type="radio" name="reason" value="not_relevant" class="mr-2">
+                                Content not relevant
+                            </label>
+                            <label class="flex items-center text-sm text-gray-700">
+                                <input type="radio" name="reason" value="never_signed_up" class="mr-2">
+                                I never signed up
+                            </label>
+                            <label class="flex items-center text-sm text-gray-700">
+                                <input type="radio" name="reason" value="other" class="mr-2">
+                                Other reason
+                            </label>
+                            <textarea name="comments" rows="2" class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="Additional comments (optional)"></textarea>
+                            <button type="submit" class="w-full mt-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
+                                Submit Feedback
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Changed Your Mind?</h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        You can resubscribe at any time by clicking the button below.
+                    </p>
+                    <form method="POST" action="{% url 'core:newsletter_resubscribe' subscriber.verification_token %}">
+                        {% csrf_token %}
+                        <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                            <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
+                            </svg>
+                            Resubscribe
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="mt-6">
+                    <a href="{% url 'core:home' %}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Home
+                    </a>
+                </div>
+                
+            {% else %}
+                <!-- Error State -->
+                <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100">
+                    <svg class="h-12 w-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+                    Invalid Link
+                </h2>
+                <p class="mt-2 text-lg text-gray-600">
+                    This unsubscribe link is invalid or has expired.
+                </p>
+                <div class="mt-6">
+                    <a href="{% url 'core:home' %}" class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200">
+                        Back to Home
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -186,32 +186,132 @@ class SiteConfiguration(models.Model):
 
 class NewsletterSubscriber(TimeStampedModel):
     """
-    Newsletter subscription model.
+    Newsletter subscription model with email verification.
     """
-    email = models.EmailField(unique=True)
-    is_active = models.BooleanField(default=True)
+    email = models.EmailField(unique=True, db_index=True)
+    name = models.CharField(max_length=255, blank=True, help_text="Subscriber's name (optional)")
+    
+    # Verification
+    is_verified = models.BooleanField(default=False, help_text="Email verified")
+    verification_token = models.CharField(max_length=64, unique=True, db_index=True, default='')
+    verified_at = models.DateTimeField(null=True, blank=True)
+    
+    # Status
+    is_active = models.BooleanField(default=True, help_text="Active subscription")
+    unsubscribed_at = models.DateTimeField(null=True, blank=True)
+    
+    # Source tracking
     source = models.CharField(
         max_length=50,
         default='website',
         help_text="Where the subscriber came from"
     )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    
+    # Preferences
     preferences = models.JSONField(
         default=dict,
-        help_text="Subscriber preferences and tags"
+        help_text="Subscriber preferences: {'frequency': 'weekly', 'categories': ['devops', 'cloud']}"
     )
+    
+    # Engagement tracking
+    emails_sent = models.PositiveIntegerField(default=0)
+    emails_opened = models.PositiveIntegerField(default=0)
+    links_clicked = models.PositiveIntegerField(default=0)
+    last_sent_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
         verbose_name = "Newsletter Subscriber"
         verbose_name_plural = "Newsletter Subscribers"
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['email', 'is_verified', 'is_active']),
+            models.Index(fields=['verification_token']),
+        ]
     
     def __str__(self):
-        return self.email
+        status = "✓" if self.is_verified else "?"
+        return f"{status} {self.email}"
+    
+    def save(self, *args, **kwargs):
+        """Generate verification token on creation."""
+        if not self.verification_token:
+            self.verification_token = self.generate_verification_token()
+        super().save(*args, **kwargs)
+    
+    @staticmethod
+    def generate_verification_token():
+        """Generate a secure verification token."""
+        import secrets
+        return secrets.token_urlsafe(32)
+    
+    def verify_email(self):
+        """Mark email as verified."""
+        from django.utils import timezone
+        self.is_verified = True
+        self.verified_at = timezone.now()
+        self.save(update_fields=['is_verified', 'verified_at'])
     
     def unsubscribe(self):
         """Unsubscribe user."""
+        from django.utils import timezone
         self.is_active = False
-        self.save(update_fields=['is_active'])
+        self.unsubscribed_at = timezone.now()
+        self.save(update_fields=['is_active', 'unsubscribed_at'])
+    
+    def resubscribe(self):
+        """Reactivate subscription."""
+        self.is_active = True
+        self.unsubscribed_at = None
+        self.save(update_fields=['is_active', 'unsubscribed_at'])
+    
+    def get_verification_url(self, request=None):
+        """Get verification URL."""
+        from django.urls import reverse
+        path = reverse('core:newsletter_verify', kwargs={'token': self.verification_token})
+        if request:
+            return request.build_absolute_uri(path)
+        return path
+    
+    def get_unsubscribe_url(self, request=None):
+        """Get unsubscribe URL."""
+        from django.urls import reverse
+        path = reverse('core:newsletter_unsubscribe', kwargs={'token': self.verification_token})
+        if request:
+            return request.build_absolute_uri(path)
+        return path
+    
+    def record_email_sent(self):
+        """Record that an email was sent."""
+        from django.utils import timezone
+        self.emails_sent += 1
+        self.last_sent_at = timezone.now()
+        self.save(update_fields=['emails_sent', 'last_sent_at'])
+    
+    def record_email_opened(self):
+        """Record that an email was opened."""
+        self.emails_opened += 1
+        self.save(update_fields=['emails_opened'])
+    
+    def record_link_clicked(self):
+        """Record that a link was clicked."""
+        self.links_clicked += 1
+        self.save(update_fields=['links_clicked'])
+    
+    @property
+    def open_rate(self):
+        """Calculate email open rate."""
+        if self.emails_sent == 0:
+            return 0
+        return round((self.emails_opened / self.emails_sent) * 100, 2)
+    
+    @property
+    def click_rate(self):
+        """Calculate click-through rate."""
+        if self.emails_sent == 0:
+            return 0
+        return round((self.links_clicked / self.emails_sent) * 100, 2)
 
 
 # =============================================================================

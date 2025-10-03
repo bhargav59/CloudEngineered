@@ -105,40 +105,9 @@ class OpenAIService:
         return model_mapping.get(model, f'openai/{model}')
     
     def _generate_mock_content(self, system_prompt: str, user_prompt: str, model: str) -> Dict[str, Any]:
-        """Generate mock content for testing"""
-        import random
-        import time
-        
-        # Simulate processing time
-        time.sleep(random.uniform(0.5, 1.5))
-        
-        mock_content = f"""This is mock content generated for testing purposes.
-
-System prompt: {system_prompt[:100]}...
-User prompt: {user_prompt[:100]}...
-Model: {model}
-
-This would normally contain AI-generated content based on your prompts.
-In production, this will be replaced with actual AI responses from OpenRouter."""
-        
-        # Simulate realistic metrics
-        word_count = len(mock_content.split())
-        estimated_tokens = int(word_count * 1.3)
-        
-        return {
-            'content': mock_content,
-            'tokens_used': estimated_tokens,
-            'input_tokens': int(estimated_tokens * 0.7),
-            'output_tokens': int(estimated_tokens * 0.3),
-            'processing_time': random.uniform(0.5, 2.0),
-            'model': model,
-            'usage': {
-                'prompt_tokens': int(estimated_tokens * 0.7),
-                'completion_tokens': int(estimated_tokens * 0.3),
-                'total_tokens': estimated_tokens
-            },
-            'raw_response': {'mock': True}
-        }
+        """Generate mock content for testing - delegates to OpenRouter service for consistency"""
+        # Use the OpenRouter service mock generator for consistent, impressive content
+        return self.openrouter_service._generate_mock_content(system_prompt, user_prompt, model)
     
     def _generate_with_openai_direct(self, system_prompt: str, user_prompt: str, 
                                    model: str, max_tokens: int, temperature: float) -> Dict[str, Any]:

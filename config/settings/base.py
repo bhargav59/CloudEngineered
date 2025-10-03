@@ -54,6 +54,7 @@ LOCAL_APPS = [
     'apps.analytics',
     'apps.automation',
     'apps.affiliates',
+    'apps.monetization',  # New monetization app
     'apps.api',
 ]
 
@@ -70,6 +71,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.core.throttling.RateLimitMiddleware',  # Rate limiting
     'apps.core.middleware.PerformanceMonitoringMiddleware',  # Performance monitoring
+    # Phase 2-3 middleware (commented out until all dependencies are ready)
+    # 'apps.analytics.middleware.AnalyticsMiddleware',  # Analytics tracking
+    # 'apps.core.seo_optimization.SEOEnhancementMiddleware',  # SEO enhancement
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -94,19 +98,30 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='cloudengineered'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
-        'OPTIONS': {
-            'sslmode': 'prefer',
-        },
+# Use SQLite for development, PostgreSQL for production
+USE_SQLITE = config('USE_SQLITE', default=True, cast=bool)
+
+if USE_SQLITE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', default='cloudengineered'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+            'OPTIONS': {
+                'sslmode': 'prefer',
+            },
+        }
+    }
 
 # Cache settings - Redis for production performance
 CACHES = {
@@ -357,17 +372,27 @@ LOGGING = {
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 
 # ========================================
-# AI SERVICE CONFIGURATION
+# AI SERVICE CONFIGURATION - OPENROUTER ONLY
 # ========================================
+# Using OpenRouter for all AI services (100+ models from single API)
+# This reduces costs and simplifies API key management
 
-# OpenRouter API Configuration
+# Primary AI Configuration
 OPENROUTER_API_KEY = config('OPENROUTER_API_KEY', default='')
 OPENROUTER_APP_NAME = config('OPENROUTER_APP_NAME', default='CloudEngineered')
-SITE_URL = config('SITE_URL', default='https://cloudengineered.com')
+SITE_URL = config('SITE_URL', default='http://localhost:8000')
+SITE_NAME = config('SITE_NAME', default='CloudEngineered')
+
+# GitHub API for repository statistics
+GITHUB_API_TOKEN = config('GITHUB_API_TOKEN', default='')
 
 # AI Service Settings
-USE_OPENROUTER = config('USE_OPENROUTER', default=True, cast=bool)
-AI_MOCK_MODE = config('AI_MOCK_MODE', default=True, cast=bool)
+USE_OPENROUTER = True  # Always use OpenRouter for cost efficiency
+AI_MOCK_MODE = config('AI_MOCK_MODE', default=False, cast=bool)  # Set to False for production
+
+# Google Analytics 4 (Phase 2-3)
+GA4_MEASUREMENT_ID = config('GA4_MEASUREMENT_ID', default='')
+GA4_API_SECRET = config('GA4_API_SECRET', default='')
 
 # AI Configuration
 AI_SETTINGS = {
@@ -398,6 +423,25 @@ AI_SETTINGS = {
         'ENABLE_CACHING': True,
         'CACHE_TTL': 3600,  # 1 hour
     },
+    # Legacy configurations (kept for backward compatibility, but all using OpenRouter)
+    'ANTHROPIC': {
+        'API_KEY': OPENROUTER_API_KEY,  # Using OpenRouter for all providers
+        'DEFAULT_MODEL': 'anthropic/claude-3.5-sonnet',
+        'MAX_TOKENS': 8000,
+        'TIMEOUT': 60,
+    },
+    'PERPLEXITY': {
+        'API_KEY': OPENROUTER_API_KEY,  # Using OpenRouter for all providers
+        'DEFAULT_MODEL': 'perplexity/llama-3.1-sonar-large-128k-online',
+        'MAX_TOKENS': 4000,
+        'TIMEOUT': 60,
+    },
+    'MULTI_MODEL_ORCHESTRATION': {
+        'ENABLED': True,
+        'RESEARCH_MODEL': 'openrouter',  # All through OpenRouter
+        'DRAFT_MODEL': 'openrouter',     # All through OpenRouter
+        'VERIFY_MODEL': 'openrouter',    # All through OpenRouter
+    },
     'CONTENT_GENERATION': {
         'ENABLE_ASYNC': True,
         'MAX_CONCURRENT': 5,
@@ -417,11 +461,87 @@ AI_SETTINGS = {
 
 # Legacy AI Settings (for backward compatibility)
 OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
-ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
 
 # Content Generation Settings
 CONTENT_GENERATION_ENABLED = config('CONTENT_GENERATION_ENABLED', default=True, cast=bool)
 AI_CONTENT_CACHE_TIMEOUT = 3600  # 1 hour
+
+# ========================================
+# MONETIZATION CONFIGURATION
+# ========================================
+
+# Stripe Configuration
+STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY', default='')
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
+STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
+
+# Affiliate Marketing Configuration
+AFFILIATE_NETWORKS = {
+    'SHAREASALE': {
+        'merchant_id': config('SHAREASALE_MERCHANT_ID', default=''),
+        'api_token': config('SHAREASALE_API_TOKEN', default=''),
+        'api_secret': config('SHAREASALE_API_SECRET', default=''),
+    },
+    'CJ': {
+        'website_id': config('CJ_WEBSITE_ID', default=''),
+        'personal_access_token': config('CJ_ACCESS_TOKEN', default=''),
+    },
+    'AMAZON': {
+        'associate_tag': config('AMAZON_ASSOCIATE_TAG', default=''),
+        'access_key': config('AMAZON_ACCESS_KEY', default=''),
+        'secret_key': config('AMAZON_SECRET_KEY', default=''),
+    },
+    'IMPACT': {
+        'account_sid': config('IMPACT_ACCOUNT_SID', default=''),
+        'auth_token': config('IMPACT_AUTH_TOKEN', default=''),
+    },
+}
+
+# Premium Subscription Tiers
+PREMIUM_TIERS = [
+    {
+        'name': 'Starter',
+        'price': 29.00,
+        'billing_period': 'monthly',
+        'features': [
+            'Unlimited tool comparisons',
+            'AI-powered recommendations',
+            'Email support',
+            'Basic analytics',
+        ]
+    },
+    {
+        'name': 'Professional',
+        'price': 79.00,
+        'billing_period': 'monthly',
+        'features': [
+            'Everything in Starter',
+            'Priority support',
+            'Advanced analytics',
+            'API access',
+            'Custom integrations',
+            'Team collaboration',
+        ]
+    },
+    {
+        'name': 'Enterprise',
+        'price': 200.00,
+        'billing_period': 'monthly',
+        'features': [
+            'Everything in Professional',
+            'Dedicated account manager',
+            'Custom SLAs',
+            'White-label options',
+            'SSO integration',
+            'Advanced security features',
+        ]
+    },
+]
+
+# Sponsored Content Settings
+SPONSORED_CONTENT_MIN_BUDGET = 500.00  # Minimum campaign budget
+SPONSORED_CONTENT_CPM = 5.00  # Cost per thousand impressions
+SPONSORED_CONTENT_CPC = 0.50  # Cost per click
 
 # AI Models Configuration (for database seeding)
 DEFAULT_AI_MODELS = [

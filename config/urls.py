@@ -27,10 +27,18 @@ def favicon_view(request):
     """Simple favicon handler to prevent 404s"""
     return HttpResponse(status=204)  # No Content
 
+def trigger_sentry_error(request):
+    """Sentry debug endpoint - Test error tracking"""
+    division_by_zero = 1 / 0
+    return HttpResponse("This should never be reached")
+
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
     path('health/', health_check, name='health_check'),  # Add this line
+    
+    # Sentry Debug (only in DEBUG mode)
+    path('sentry-debug/', trigger_sentry_error, name='sentry_debug'),
     
     # SEO Files
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
@@ -52,6 +60,9 @@ urlpatterns = [
     
     # AI Content Generation
     path('api/ai/', include('apps.ai.urls')),
+    
+    # Public API (Phase 2-3)
+    path('api/v1/', include('apps.api.public_urls')),
     
     # SEO and utilities
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),

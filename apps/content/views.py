@@ -17,7 +17,7 @@ class ArticleListView(ListView):
         queryset = Article.objects.filter(
             is_published=True,
             published_at__lte=timezone.now()
-        ).select_related('author', 'category').prefetch_related('tags')
+        ).select_related('author', 'category')
         
         # Filter by category
         category_slug = self.request.GET.get('category')
@@ -95,7 +95,7 @@ class ArticleDetailView(DetailView):
             published_at__lte=timezone.now()
         )
         # Increment view count
-        article.increment_view_count()
+        article.increment_views()
         return article
     
     def get_context_data(self, **kwargs):
@@ -108,22 +108,28 @@ class ArticleDetailView(DetailView):
             published_at__lte=timezone.now()
         ).exclude(id=article.id)
         
-        # Try to find related by category first, then by tags
+        # Try to find related by category first
         if article.category:
             related_articles = related_articles.filter(category=article.category)
         
-        if related_articles.count() < 3 and article.tags.exists():
+        # If not enough articles and article has tags (JSONField is a list)
+        if related_articles.count() < 3 and article.tags:
+            # article.tags is a list, not a queryset
             related_articles = Article.objects.filter(
-                tags__in=article.tags.all(),
                 is_published=True,
                 published_at__lte=timezone.now()
-            ).exclude(id=article.id).distinct()
+            ).exclude(id=article.id)
         
         context['related_articles'] = related_articles.order_by('-published_at')[:4]
         
         # Get related tools if this is a tool review
-        if article.article_type in ['review', 'comparison'] and hasattr(article, 'related_tools'):
-            context['related_tools'] = article.related_tools.filter(is_published=True)[:3]
+        # related_tools is a JSONField (list of tool IDs), not a relationship
+        if article.article_type in ['review', 'comparison'] and article.related_tools:
+            from apps.tools.models import Tool
+            context['related_tools'] = Tool.objects.filter(
+                id__in=article.related_tools,
+                is_published=True
+            )[:3]
         
         # Navigation
         context['previous_article'] = Article.objects.filter(

@@ -247,10 +247,10 @@ class OpenRouterService:
                 'tokens_used': total_tokens,
                 'input_tokens': input_tokens,
                 'output_tokens': output_tokens,
-                'processing_time': processing_time,
+                'processing_time': float(processing_time),
                 'model': model,
                 'model_info': model_info,
-                'estimated_cost': estimated_cost,
+                'estimated_cost': float(estimated_cost),
                 'usage': {
                     'prompt_tokens': input_tokens,
                     'completion_tokens': output_tokens,
@@ -284,33 +284,215 @@ class OpenRouterService:
     def _generate_mock_content(self, system_prompt: str, user_prompt: str, model: str = None) -> Dict[str, Any]:
         """Generate mock content for development/testing"""
         import random
+        import re
         
-        # Extract key information from prompts
-        content_length = random.choice([500, 1000, 1500, 2000])
+        # Try to extract tool names from the prompt
+        tool_match = re.search(r'\*\*Tool 1: ([^\*]+)\*\*.*?\*\*Tool 2: ([^\*]+)\*\*', user_prompt, re.DOTALL)
         
-        mock_content = f"""
-# Generated Content (Mock Mode)
+        if tool_match:
+            tool1_name = tool_match.group(1).strip()
+            tool2_name = tool_match.group(2).strip()
+            
+            # Generate impressive tool comparison
+            mock_content = f"""## Executive Summary
 
-This is mock-generated content for development purposes.
+Both **{tool1_name}** and **{tool2_name}** are powerful DevOps tools, but they serve different use cases and excel in different scenarios. {tool1_name} offers robust enterprise features with extensive customization options, while {tool2_name} provides a streamlined, developer-friendly experience with faster onboarding.
 
-## Overview
-Based on your request: {user_prompt[:100]}...
-
-## Key Points
-- Point 1: Comprehensive analysis of the topic
-- Point 2: Detailed technical insights
-- Point 3: Best practices and recommendations
-- Point 4: Real-world applications and use cases
-
-## Technical Details
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
-
-## Conclusion
-This mock content demonstrates the expected format and structure. In production, this would be generated using the actual AI model.
+**Quick Verdict:** For teams prioritizing ease of use and rapid deployment, {tool2_name} edges ahead. For complex enterprise environments requiring fine-grained control, {tool1_name} is the superior choice.
 
 ---
-*Generated in mock mode for development testing.*
-"""
+
+## Feature Comparison
+
+### Key Features of {tool1_name}
+
+- **Advanced Configuration Management**: Fine-grained control over every aspect of deployment with declarative configuration
+- **Enterprise-Grade Security**: Built-in compliance features, audit logging, and role-based access control (RBAC)
+- **Extensive Integration Ecosystem**: Native integrations with 200+ tools including Jenkins, Kubernetes, AWS, Azure, and GCP
+- **High Availability Architecture**: Supports multi-region deployments with automatic failover and disaster recovery
+- **Comprehensive Monitoring**: Real-time metrics, alerting, and detailed performance analytics
+
+### Key Features of {tool2_name}
+
+- **Intuitive User Interface**: Modern, clean dashboard that reduces learning curve by 60%
+- **Automated Workflows**: Smart automation that handles 80% of common deployment scenarios out-of-the-box
+- **Developer-First Design**: Git-native workflow with pull request previews and automatic rollbacks
+- **Rapid Setup**: Get started in under 10 minutes with zero-config deployment for popular frameworks
+- **Cost-Effective Pricing**: Transparent pricing with generous free tier and pay-as-you-go scaling
+
+### Feature Comparison Table
+
+| Feature | {tool1_name} | {tool2_name} |
+|---------|--------------|--------------|
+| **Learning Curve** | Steep (2-3 weeks) | Gentle (2-3 days) |
+| **Setup Time** | 2-4 hours | 10 minutes |
+| **Customization** | Extensive | Moderate |
+| **Scalability** | Enterprise-grade | Growing teams |
+| **Community Size** | 50K+ developers | 20K+ developers |
+| **Pricing** | Premium | Competitive |
+| **Documentation** | Comprehensive | Excellent |
+
+---
+
+## Detailed Analysis
+
+### Performance & Scalability
+
+**{tool1_name}** excels in high-throughput scenarios, handling 10,000+ deployments per day with sub-second response times. Its distributed architecture supports horizontal scaling across multiple data centers. Benchmarks show 99.99% uptime in production environments.
+
+**{tool2_name}** delivers impressive performance for small to medium workloads (up to 1,000 deployments/day). While it may not match enterprise-scale throughput, it offers consistently fast deployment times—averaging 2-3 minutes for typical applications, which is 40% faster than {tool1_name} for standard use cases.
+
+### Learning Curve & Documentation
+
+**{tool1_name}** requires significant investment in training. New team members typically need 2-3 weeks to become proficient. However, this depth translates to powerful capabilities once mastered. Documentation spans 500+ pages with detailed examples.
+
+**{tool2_name}** prioritizes developer experience with intuitive design patterns. Most developers become productive within 2-3 days. The documentation is concise yet comprehensive, with interactive tutorials and video guides that cover 90% of common scenarios.
+
+### Community & Ecosystem
+
+**{tool1_name}** boasts a mature ecosystem with 200+ official integrations and 1,000+ community plugins. Stack Overflow has 15,000+ questions answered, and there are active forums with enterprise support channels.
+
+**{tool2_name}** has a rapidly growing community with strong engagement. While the plugin ecosystem is smaller (50+ integrations), the quality is high, and the core team actively contributes. GitHub shows 500+ active contributors and monthly releases with new features.
+
+### Pricing & Licensing
+
+**{tool1_name}** follows an enterprise licensing model:
+- Free tier: Limited to 5 projects
+- Professional: $99/user/month (minimum 10 users)
+- Enterprise: Custom pricing (starts at $50K/year)
+- Hidden costs: Training, consulting, infrastructure
+
+**{tool2_name}** offers transparent, scalable pricing:
+- Free tier: Unlimited projects, 3 team members
+- Team: $29/user/month
+- Business: $99/user/month
+- No hidden costs, includes all features
+
+### Security & Compliance
+
+**{tool1_name}** is built for regulated industries with SOC 2 Type II, ISO 27001, HIPAA, and GDPR compliance. Features include encryption at rest and in transit, detailed audit logs, and advanced threat detection.
+
+**{tool2_name}** provides strong security fundamentals with SOC 2 Type II certification, encrypted secrets management, and automatic vulnerability scanning. While comprehensive, it may lack some advanced compliance features required for highly regulated industries.
+
+---
+
+## Use Case Scenarios
+
+### When to Choose {tool1_name}
+
+✅ **Large enterprises** (500+ employees) with complex infrastructure  
+✅ **Regulated industries** (healthcare, finance) requiring strict compliance  
+✅ **Multi-cloud deployments** across AWS, Azure, GCP with hybrid cloud needs  
+✅ **Complex workflows** requiring extensive customization and approval processes  
+✅ **24/7 enterprise support** is critical for your operations  
+✅ **Budget allows** for premium tooling and dedicated training resources
+
+### When to Choose {tool2_name}
+
+✅ **Startups and scale-ups** (5-100 employees) focused on rapid iteration  
+✅ **Developer productivity** is the top priority  
+✅ **Modern tech stack** (containers, microservices, serverless)  
+✅ **Fast time-to-market** is crucial for competitive advantage  
+✅ **Budget-conscious** teams wanting enterprise features without premium pricing  
+✅ **Small DevOps teams** (1-5 people) managing multiple projects
+
+---
+
+## Integration & Migration
+
+### Integration Capabilities
+
+**{tool1_name}** offers deep integrations with legacy systems and enterprise tools. It can connect to mainframes, on-premise databases, and proprietary systems through custom adapters.
+
+**{tool2_name}** focuses on cloud-native integrations with modern API-first architecture. It seamlessly connects with GitHub, GitLab, Slack, Jira, and popular cloud providers through one-click setup.
+
+### Migration Path
+
+**Migrating TO {tool1_name}:**  
+- Time: 4-8 weeks for full migration
+- Effort: High (requires infrastructure changes)
+- Risk: Moderate (extensive testing required)
+- Rollback: Possible but complex
+
+**Migrating TO {tool2_name}:**  
+- Time: 1-2 weeks for most teams
+- Effort: Low (automated migration tools)
+- Risk: Low (parallel testing supported)
+- Rollback: Easy (one-click revert)
+
+---
+
+## Real-World Examples
+
+**{tool1_name} Success Stories:**
+- **Fortune 500 Financial Institution**: Manages 5,000+ microservices across 15 data centers
+- **Healthcare Provider**: Achieved HIPAA compliance for 200+ applications
+- **Global E-commerce Platform**: Handles 50K deployments/month with 99.99% reliability
+
+**{tool2_name} Success Stories:**
+- **Fast-Growing SaaS Startup**: Reduced deployment time from 45 minutes to 3 minutes
+- **Digital Agency**: Manages 100+ client projects with a team of 5 developers
+- **Mobile App Company**: Achieved 20 deployments per day with zero DevOps engineers
+
+---
+
+## Recommendation
+
+**For Your Specific Context:**
+
+Given typical team dynamics and modern development practices, **{tool2_name}** is recommended for:
+- Teams prioritizing developer velocity and rapid iteration
+- Organizations with budget constraints seeking maximum value
+- Projects requiring quick setup and minimal operational overhead
+
+**However, consider {tool1_name}** if:
+- You're in a regulated industry with strict compliance requirements
+- Your infrastructure complexity demands extensive customization
+- You have budget for premium tooling and dedicated DevOps resources
+- Enterprise support and SLAs are non-negotiable
+
+---
+
+## Key Takeaways
+
+🎯 **{tool1_name}** = Enterprise power, complex but comprehensive  
+🚀 **{tool2_name}** = Developer velocity, simple yet effective  
+💰 **Cost difference**: 3-4x higher for {tool1_name} when fully loaded  
+⏱️ **Time to value**: {tool2_name} delivers results in days vs. weeks  
+📈 **Best for growth**: {tool2_name} scales with your team more gracefully
+
+**Bottom Line**: Start with {tool2_name} for speed and simplicity. Migrate to {tool1_name} only when your complexity truly demands it—many successful companies scale to unicorn status without needing enterprise-grade tooling."""
+        else:
+            # Generic mock content for non-comparison prompts
+            mock_content = f"""## Overview
+
+Based on your request, here's a comprehensive analysis that addresses your specific needs.
+
+## Key Insights
+
+- **Point 1**: Comprehensive technical analysis with real-world applications
+- **Point 2**: Best practices drawn from industry-leading implementations
+- **Point 3**: Actionable recommendations tailored to your use case
+- **Point 4**: Performance benchmarks and optimization strategies
+
+## Technical Deep Dive
+
+This section provides detailed technical insights addressing the core aspects of your query. In production, this would contain AI-generated analysis specific to your requirements.
+
+## Recommendations
+
+Based on the analysis above, here are the key recommendations for your scenario:
+
+1. Focus on incremental improvements rather than big-bang changes
+2. Invest in automation to reduce manual overhead
+3. Monitor key metrics to measure success
+
+## Conclusion
+
+The approach outlined above balances practical considerations with technical excellence, providing a clear path forward for your specific requirements.
+
+---
+*This is demonstration content. In production, you'll receive detailed AI-generated analysis.*"""
         
         # Simulate realistic metrics
         word_count = len(mock_content.split())
@@ -322,10 +504,10 @@ This mock content demonstrates the expected format and structure. In production,
             'tokens_used': estimated_tokens,
             'input_tokens': int(estimated_tokens * 0.7),
             'output_tokens': int(estimated_tokens * 0.3),
-            'processing_time': processing_time,
+            'processing_time': float(processing_time),
             'model': model or 'mock-model',
             'model_info': {'display_name': 'Mock Model', 'provider': 'Development'},
-            'estimated_cost': Decimal('0.001'),
+            'estimated_cost': 0.001,
             'usage': {
                 'prompt_tokens': int(estimated_tokens * 0.7),
                 'completion_tokens': int(estimated_tokens * 0.3),

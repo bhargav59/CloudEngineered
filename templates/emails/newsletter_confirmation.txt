@@ -1,0 +1,38 @@
+Hi{% if subscriber.name %} {{ subscriber.name }}{% endif %}!
+
+Welcome to {{ site_name }}! 🚀
+
+Thank you for subscribing to our newsletter. We're excited to have you join our community of cloud engineers and DevOps professionals.
+
+To start receiving our weekly updates, please confirm your email address by visiting:
+
+{{ verification_url }}
+
+WHAT YOU'LL GET:
+-----------------------------------
+✓ Weekly Cloud Engineering Tips – Best practices and industry insights
+✓ Exclusive Tool Comparisons – In-depth reviews of DevOps tools
+✓ Tutorials & Guides – Step-by-step tutorials for Kubernetes, Docker, Terraform, and more
+✓ Early Access – Be the first to know about new content and features
+✓ No Spam – Quality content only, unsubscribe anytime
+
+DIDN'T SUBSCRIBE?
+-----------------------------------
+If you didn't request this subscription, you can safely ignore this email. Your email address will not be added to our mailing list without confirmation.
+
+We respect your inbox and your time. Our goal is to provide valuable, actionable content that helps you level up your cloud engineering skills.
+
+Best regards,
+The {{ site_name }} Team
+
+-----------------------------------
+{{ site_name }}
+Your trusted source for cloud engineering insights
+
+This email was sent to {{ subscriber.email }}
+You're receiving this because you signed up for our newsletter.
+If you didn't request this, please ignore this email.
+
+Confirm Subscription: {{ verification_url }}
+Visit Website: https://{{ site_name|lower }}.com
+Privacy Policy: https://{{ site_name|lower }}.com/privacy

@@ -2,7 +2,7 @@
 Core views for CloudEngineered platform.
 """
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.generic import TemplateView, ListView
 from django.core.paginator import Paginator
@@ -50,6 +50,11 @@ class HomeView(TemplateView):
         context['popular_categories'] = Category.objects.annotate(
             tools_count=Count('tools')
         ).filter(tools_count__gt=0).order_by('-tools_count')[:6]
+        
+        # Featured categories (for homepage hero/sections)
+        context['featured_categories'] = Category.objects.filter(
+            is_featured=True
+        ).order_by('sort_order')[:6]
         
         # Stats for homepage
         context['stats'] = {
@@ -217,32 +222,207 @@ class SearchView(ListView):
 
 class NewsletterSubscribeView(TemplateView):
     """
-    Newsletter subscription endpoint.
+    Newsletter subscription endpoint with email verification.
     """
     def post(self, request, *args, **kwargs):
+        from django.core.mail import send_mail
+        from django.template.loader import render_to_string
+        from django.utils.html import strip_tags
+        import json
+        
         form = NewsletterSubscriptionForm(request.POST)
         
         if form.is_valid():
             email = form.cleaned_data['email']
+            name = request.POST.get('name', '')
+            preferences_str = request.POST.get('preferences', '{}')
+            
+            try:
+                preferences = json.loads(preferences_str) if preferences_str else {}
+            except json.JSONDecodeError:
+                preferences = {}
+            
+            # Get IP and user agent
+            ip_address = request.META.get('REMOTE_ADDR')
+            user_agent = request.META.get('HTTP_USER_AGENT', '')
             
             # Check if already subscribed
             subscriber, created = NewsletterSubscriber.objects.get_or_create(
                 email=email,
-                defaults={'is_active': True}
+                defaults={
+                    'name': name,
+                    'is_active': True,
+                    'is_verified': False,
+                    'source': 'website',
+                    'ip_address': ip_address,
+                    'user_agent': user_agent,
+                    'preferences': preferences
+                }
             )
             
             if created:
-                messages.success(request, 'Thank you for subscribing to our newsletter!')
-                return JsonResponse({'success': True, 'message': 'Subscribed successfully!'})
+                # Send verification email
+                try:
+                    verification_url = subscriber.get_verification_url(request)
+                    
+                    # Email context
+                    context = {
+                        'subscriber': subscriber,
+                        'verification_url': verification_url,
+                        'site_name': getattr(settings, 'SITE_NAME', 'CloudEngineered'),
+                    }
+                    
+                    # Render HTML email
+                    html_message = render_to_string('emails/newsletter_confirmation.html', context)
+                    plain_message = strip_tags(html_message)
+                    
+                    send_mail(
+                        subject='Confirm Your Newsletter Subscription',
+                        message=plain_message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[email],
+                        html_message=html_message,
+                        fail_silently=False,
+                    )
+                    
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Thank you! Please check your email to confirm your subscription.'
+                    })
+                except Exception as e:
+                    # Log error but still return success to user
+                    print(f"Error sending verification email: {e}")
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Subscribed! (Email verification pending)'
+                    })
+                    
             elif not subscriber.is_active:
-                subscriber.is_active = True
-                subscriber.save()
-                messages.success(request, 'Welcome back! Your subscription has been reactivated.')
-                return JsonResponse({'success': True, 'message': 'Subscription reactivated!'})
+                # Reactivate subscription
+                subscriber.resubscribe()
+                subscriber.name = name or subscriber.name
+                subscriber.preferences = preferences
+                subscriber.save(update_fields=['name', 'preferences'])
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Welcome back! Your subscription has been reactivated.'
+                })
             else:
-                return JsonResponse({'success': False, 'message': 'You are already subscribed!'})
+                return JsonResponse({
+                    'success': False,
+                    'message': 'You are already subscribed! Check your email for the confirmation link.'
+                })
         
-        return JsonResponse({'success': False, 'errors': form.errors})
+        return JsonResponse({
+            'success': False,
+            'message': 'Please enter a valid email address.',
+            'errors': form.errors
+        })
+
+
+class NewsletterVerifyView(TemplateView):
+    """
+    Email verification endpoint.
+    """
+    template_name = 'core/newsletter_verify.html'
+    
+    def get(self, request, token):
+        try:
+            subscriber = NewsletterSubscriber.objects.get(verification_token=token)
+            
+            if subscriber.is_verified:
+                return render(request, self.template_name, {
+                    'success': True,
+                    'subscriber': subscriber,
+                    'already_verified': True
+                })
+            
+            subscriber.verify_email()
+            
+            return render(request, self.template_name, {
+                'success': True,
+                'subscriber': subscriber
+            })
+            
+        except NewsletterSubscriber.DoesNotExist:
+            return render(request, self.template_name, {
+                'success': False,
+                'error_message': 'Invalid or expired verification link.'
+            })
+
+
+class NewsletterUnsubscribeView(TemplateView):
+    """
+    Unsubscribe endpoint.
+    """
+    template_name = 'core/newsletter_unsubscribe.html'
+    
+    def get(self, request, token):
+        try:
+            subscriber = NewsletterSubscriber.objects.get(verification_token=token)
+            
+            if not subscriber.is_active:
+                return render(request, self.template_name, {
+                    'success': True,
+                    'subscriber': subscriber,
+                    'already_unsubscribed': True
+                })
+            
+            subscriber.unsubscribe()
+            
+            return render(request, self.template_name, {
+                'success': True,
+                'subscriber': subscriber
+            })
+            
+        except NewsletterSubscriber.DoesNotExist:
+            return render(request, self.template_name, {
+                'success': False
+            })
+
+
+class NewsletterResubscribeView(TemplateView):
+    """
+    Resubscribe endpoint.
+    """
+    def post(self, request, token):
+        try:
+            subscriber = NewsletterSubscriber.objects.get(verification_token=token)
+            subscriber.resubscribe()
+            messages.success(request, 'Welcome back! You have been resubscribed.')
+            return redirect('core:home')
+        except NewsletterSubscriber.DoesNotExist:
+            messages.error(request, 'Invalid subscription link.')
+            return redirect('core:home')
+
+
+class NewsletterFeedbackView(TemplateView):
+    """
+    Collect unsubscribe feedback.
+    """
+    def post(self, request):
+        token = request.POST.get('subscriber_token')
+        reason = request.POST.get('reason')
+        comments = request.POST.get('comments', '')
+        
+        try:
+            subscriber = NewsletterSubscriber.objects.get(verification_token=token)
+            # Store feedback in preferences
+            feedback = subscriber.preferences.get('unsubscribe_feedback', [])
+            feedback.append({
+                'reason': reason,
+                'comments': comments,
+                'date': timezone.now().isoformat()
+            })
+            subscriber.preferences['unsubscribe_feedback'] = feedback
+            subscriber.save(update_fields=['preferences'])
+            
+            messages.success(request, 'Thank you for your feedback!')
+        except NewsletterSubscriber.DoesNotExist:
+            pass
+        
+        return redirect('core:home')
 
 
 class AboutView(TemplateView):

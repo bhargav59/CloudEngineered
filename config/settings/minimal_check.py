@@ -50,6 +50,9 @@ CACHES = {
     }
 }
 
+# AI Configuration - Use mock mode for testing
+AI_MOCK_MODE = True
+
 # Disable AI features for now
 AI_SETTINGS = {
     'USE_OPENROUTER': False,

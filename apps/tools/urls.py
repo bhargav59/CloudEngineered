@@ -4,6 +4,15 @@ URL configuration for the tools app.
 
 from django.urls import path
 from . import views, ai_integration
+from .comparison_bot_views import (
+    ComparisonBotView,
+    ComparisonBotAPIView,
+    QuickComparisonAPIView,
+    ComparisonSuggestionsAPIView,
+    ComparisonFeedbackAPIView,
+    ComparisonHistoryView,
+    ToolSearchAPIView
+)
 
 app_name = 'tools'
 
@@ -12,6 +21,15 @@ urlpatterns = [
     path('', views.category_list, name='category_list'),
     path('comparisons/', views.comparison_list, name='comparison_list'),
     path('comparisons/<slug:slug>/', views.comparison_detail, name='comparison_detail'),
+    
+    # AI Comparison Bot
+    path('compare/', ComparisonBotView.as_view(), name='comparison_bot'),
+    path('compare/generate/', ComparisonBotAPIView.as_view(), name='comparison_bot_generate'),
+    path('compare/quick/', QuickComparisonAPIView.as_view(), name='comparison_bot_quick'),
+    path('compare/suggestions/', ComparisonSuggestionsAPIView.as_view(), name='comparison_suggestions'),
+    path('compare/feedback/', ComparisonFeedbackAPIView.as_view(), name='comparison_feedback'),
+    path('compare/history/', ComparisonHistoryView.as_view(), name='comparison_history'),
+    path('api/search/', ToolSearchAPIView.as_view(), name='tool_search'),
     
     # AI Integration endpoints
     path('api/<int:tool_id>/generate-content/', ai_integration.generate_tool_content, name='generate_tool_content'),
