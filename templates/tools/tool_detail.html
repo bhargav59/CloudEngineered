@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load markdown_extras %}
 
 {% block title %}{{ tool.name }} - {{ tool.category.name }} Tool Review - {{ site_name }}{% endblock %}
 {% block meta_description %}{{ tool.description|truncatewords:25 }}{% endblock %}
@@ -130,7 +131,7 @@
                 <div class="mb-8">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
                     <div class="prose max-w-none">
-                        {{ tool.detailed_description|safe|linebreaks }}
+                        {{ tool.detailed_description|markdown }}
                     </div>
                 </div>
                 {% else %}

@@ -383,11 +383,16 @@ OPENROUTER_APP_NAME = config('OPENROUTER_APP_NAME', default='CloudEngineered')
 SITE_URL = config('SITE_URL', default='http://localhost:8000')
 SITE_NAME = config('SITE_NAME', default='CloudEngineered')
 
+# Google Gemini Configuration (FREE TIER - Primary)
+GOOGLE_GEMINI_API_KEY = config('GOOGLE_GEMINI_API_KEY', default='')
+AI_PROVIDER = config('AI_PROVIDER', default='GEMINI')
+AI_MODEL = config('AI_MODEL', default='gemini-2.0-flash')
+
 # GitHub API for repository statistics
 GITHUB_API_TOKEN = config('GITHUB_API_TOKEN', default='')
 
 # AI Service Settings
-USE_OPENROUTER = True  # Always use OpenRouter for cost efficiency
+USE_OPENROUTER = config('USE_OPENROUTER', default=False, cast=bool)  # Use Gemini by default
 AI_MOCK_MODE = config('AI_MOCK_MODE', default=False, cast=bool)  # Set to False for production
 
 # Google Analytics 4 (Phase 2-3)

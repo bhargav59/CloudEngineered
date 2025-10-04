@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load markdown_extras %}
 
 {% block title %}{{ article.title }} - {{ site_name }}{% endblock %}
 {% block meta_description %}{{ article.excerpt }}{% endblock %}
@@ -119,7 +120,7 @@
         
         <!-- Article Body -->
         <div class="prose prose-lg max-w-none mb-12">
-            {{ article.content|safe|linebreaks }}
+            {{ article.content|markdown }}
         </div>
         
         <!-- Article Footer -->
