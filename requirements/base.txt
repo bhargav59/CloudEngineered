@@ -104,3 +104,4 @@ drf-spectacular>=0.26.0
 # Date and Time
 python-dateutil>=2.8.2
 pytz>=2023.3
+bleach>=6.0.0

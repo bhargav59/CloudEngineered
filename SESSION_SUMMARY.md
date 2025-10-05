@@ -25,10 +25,10 @@ User provided 4 API keys to test:
 
 | # | API | Key | Status | Error |
 |---|-----|-----|--------|-------|
-| 1 | xAI Grok | `xai-PKjr8sgc...` | ❌ Failed | 429 - Credits exhausted |
-| 2 | NVIDIA NIM 1 | `nvapi-NHet4c...` | ❌ Failed | 403 - Authorization failed |
-| 3 | NVIDIA NIM 2 | `nvapi-wcr6GA...` | ❌ Failed | 403 - Authorization failed |
-| 4 | **Google Gemini** | `AIzaSyDiI33T...` | ✅ **WORKING** | None - Success! |
+| 1 | xAI Grok | [REDACTED] | ❌ Failed | 429 - Credits exhausted |
+| 2 | NVIDIA NIM 1 | [REDACTED] | ❌ Failed | 403 - Authorization failed |
+| 3 | NVIDIA NIM 2 | [REDACTED] | ❌ Failed | 403 - Authorization failed |
+| 4 | Google Gemini | [REDACTED] | ✅ WORKING | None - Success! |
 
 **Winner:** Google Gemini API (Free, working, high quality)
 

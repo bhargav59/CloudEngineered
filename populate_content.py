@@ -28,14 +28,25 @@ def create_superuser():
     User = get_user_model()
     if not User.objects.filter(username='admin').exists():
         print("Creating superuser...")
+        
+        # Use environment variables for credentials (secure)
+        username = os.environ.get('ADMIN_USERNAME', 'admin')
+        password = os.environ.get('ADMIN_PASSWORD', 'changeme123')  # Weak default for dev only
+        email = os.environ.get('ADMIN_EMAIL', 'admin@cloudengineered.com')
+        
+        # Warn if using default password
+        if password == 'changeme123':
+            print("⚠️  WARNING: Using default password. Set ADMIN_PASSWORD env var for production!")
+        
         user = User.objects.create_superuser(
-            username='admin',
-            email='admin@cloudengineered.com',
-            password='admin123',
+            username=username,
+            email=email,
+            password=password,
             first_name='Cloud',
             last_name='Admin'
         )
-        print(f"✅ Created superuser: admin / admin123")
+        print(f"✅ Created superuser: {username}")
+        print(f"   Set custom credentials with: export ADMIN_USERNAME=... ADMIN_PASSWORD=... ADMIN_EMAIL=...")
         return user
     else:
         print("✅ Superuser already exists")

@@ -4,6 +4,7 @@ Replaces OpenRouter with free Gemini API
 """
 
 import logging
+import threading
 from typing import Dict, List, Optional
 from django.conf import settings
 import google.generativeai as genai
@@ -17,13 +18,24 @@ class GeminiService:
     def __init__(self):
         """Initialize Gemini service"""
         self.api_key = settings.GOOGLE_GEMINI_API_KEY
+        
+        # Validate API key is present
+        if not self.api_key:
+            raise ValueError(
+                "GOOGLE_GEMINI_API_KEY is not configured. "
+                "Please set it in your .env file."
+            )
+        
         self.model_name = getattr(settings, 'AI_MODEL', 'gemini-2.0-flash')
         
-        # Configure Gemini
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel(self.model_name)
-        
-        logger.info(f"Gemini service initialized with model: {self.model_name}")
+        try:
+            # Configure Gemini
+            genai.configure(api_key=self.api_key)
+            self.model = genai.GenerativeModel(self.model_name)
+            logger.info(f"Gemini service initialized with model: {self.model_name}")
+        except Exception as e:
+            logger.error(f"Failed to initialize Gemini service: {str(e)}")
+            raise
     
     def generate_content(
         self,
@@ -198,13 +210,17 @@ Write 1000-1500 words. Make it engaging, informative, and practical."""
         )
 
 
-# Singleton instance
+# Singleton instance with thread safety
 _gemini_service = None
+_service_lock = threading.Lock()
 
 
 def get_gemini_service() -> GeminiService:
-    """Get or create Gemini service instance"""
+    """Get or create Gemini service instance (thread-safe)"""
     global _gemini_service
     if _gemini_service is None:
-        _gemini_service = GeminiService()
+        with _service_lock:
+            # Double-check pattern
+            if _gemini_service is None:
+                _gemini_service = GeminiService()
     return _gemini_service

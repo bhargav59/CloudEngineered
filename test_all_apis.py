@@ -16,13 +16,19 @@ from openai import OpenAI
 import google.generativeai as genai
 import requests
 
-# API Keys to test
+# API Keys to test - load from environment variables for security
 API_KEYS = {
-    'xai': 'xai-PKjr8sgcENsYOGYgg19aofxeKM8HZzVEcb9wDpCocvg3d9eH5U1hMOLxsqC7plMqVzyxeJWod3ruWT1j',
-    'nvidia_1': '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',
-    'nvidia_2': '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',
-    'gemini': 'AIzaSyDiI33TKDrgp03fFEEiuBXgP48xi81_m9M',
+    'xai': os.getenv('XAI_API_KEY', ''),
+    'nvidia_1': os.getenv('NVIDIA_API_KEY_1', ''),
+    'nvidia_2': os.getenv('NVIDIA_API_KEY_2', ''),
+    'gemini': os.getenv('GOOGLE_GEMINI_API_KEY', ''),
 }
+
+# Validate that at least one API key is provided
+if not any(API_KEYS.values()):
+    print("❌ Error: No API keys found in environment variables")
+    print("   Please set at least one of: XAI_API_KEY, NVIDIA_API_KEY_1, NVIDIA_API_KEY_2, GOOGLE_GEMINI_API_KEY")
+    sys.exit(1)
 
 print("=" * 80)
 print("  AI API Testing Suite - Finding the Best Working API")

@@ -35,7 +35,7 @@ with all its dependencies, ensuring consistent deployment across different envir
 ```env
 # ✅ Google Gemini AI Configuration (WORKING)
 AI_PROVIDER=GEMINI
-GOOGLE_GEMINI_API_KEY=AIzaSyDiI33TKDrgp03fFEEiuBXgP48xi81_m9M
+GOOGLE_GEMINI_API_KEY=your_api_key_here
 AI_MODEL=gemini-2.0-flash
 AI_MOCK_MODE=False
 USE_OPENROUTER=False
