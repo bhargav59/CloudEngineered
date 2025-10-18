@@ -39,4 +39,5 @@ urlpatterns = [
     # Tool detail pages
     path('<slug:category>/', views.tool_list, name='tool_list'),
     path('<slug:category>/<slug:slug>/', views.tool_detail, name='tool_detail'),
+    path('<slug:category>/<slug:slug>/review/', views.create_review, name='create_review'),
 ]

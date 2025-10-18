@@ -268,7 +268,7 @@
                     </ul>
                 </div>
                 
-                <a href="{% url 'tools:tool_list' %}" 
+                <a href="{% url 'tools:category_list' %}" 
                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     <i class="fas fa-th-large mr-2"></i>
                     Browse All Tools
@@ -310,7 +310,13 @@
                         {% for category in categories %}
                         <a href="?category={{ category.slug }}" 
                            class="search-suggestion p-3 text-center border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50">
-                            <div class="text-2xl mb-2">{{ category.icon|default:"📁" }}</div>
+                            <div class="text-2xl mb-2">
+                                {% if "fa-" in category.icon %}
+                                    <i class="{{ category.icon }}"></i>
+                                {% else %}
+                                    {{ category.icon|default:"📁" }}
+                                {% endif %}
+                            </div>
                             <div class="font-medium text-gray-900">{{ category.name }}</div>
                             <div class="text-xs text-gray-500">{{ category.tools.count }} tools</div>
                         </a>

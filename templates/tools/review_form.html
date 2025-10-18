@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Back Link -->
+        <div class="mb-6">
+            <a href="{% url 'tools:tool_detail' tool.category.slug tool.slug %}" class="text-blue-600 hover:text-blue-800 flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to {{ tool.name }}
+            </a>
+        </div>
+
+        <!-- Page Header -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="flex items-center mb-4">
+                {% if tool.logo %}
+                <img src="{{ tool.logo.url }}" alt="{{ tool.name }}" class="w-16 h-16 rounded-lg mr-4 object-contain">
+                {% else %}
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg mr-4 flex items-center justify-center">
+                    <span class="text-white text-2xl font-bold">{{ tool.name|slice:":1" }}</span>
+                </div>
+                {% endif %}
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Write a Review</h1>
+                    <p class="text-gray-600">Share your experience with {{ tool.name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Form -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Messages -->
+                {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                    <div class="{% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-200 text-yellow-800{% elif message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %} border rounded-lg p-4 mb-3">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Rating -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">
+                        {{ form.rating.label }} <span class="text-red-500">*</span>
+                    </label>
+                    <div class="flex items-center space-x-2">
+                        {% for choice in form.rating %}
+                        <label class="cursor-pointer">
+                            {{ choice.tag }}
+                            <span class="ml-1 text-2xl {% if choice.choice_value <= forloop.counter %}text-yellow-400{% else %}text-gray-300{% endif %}">
+                                <i class="fas fa-star"></i>
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% if form.rating.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.rating.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <label for="{{ form.title.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        {{ form.title.label }} <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Content -->
+                <div>
+                    <label for="{{ form.content.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        {{ form.content.label }} <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.content }}
+                    {% if form.content.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.content.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">
+                        Share your experience, what you liked, what could be improved, and any tips for other users.
+                    </p>
+                </div>
+
+                <!-- Usage Duration -->
+                <div>
+                    <label for="{{ form.usage_duration.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        {{ form.usage_duration.label }}
+                    </label>
+                    {{ form.usage_duration }}
+                    {% if form.usage_duration.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.usage_duration.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Use Case -->
+                <div>
+                    <label for="{{ form.use_case.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        {{ form.use_case.label }}
+                    </label>
+                    {{ form.use_case }}
+                    {% if form.use_case.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.use_case.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Team Size -->
+                <div>
+                    <label for="{{ form.team_size.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        {{ form.team_size.label }}
+                    </label>
+                    {{ form.team_size }}
+                    {% if form.team_size.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.team_size.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <a href="{% url 'tools:tool_detail' tool.category.slug tool.slug %}" class="text-gray-600 hover:text-gray-800">
+                        Cancel
+                    </a>
+                    <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200">
+                        Submit Review
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Review Guidelines -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 class="font-semibold text-blue-900 mb-3 flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>
+                Review Guidelines
+            </h3>
+            <ul class="space-y-2 text-sm text-blue-800">
+                <li class="flex items-start">
+                    <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
+                    <span>Be honest and constructive in your feedback</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
+                    <span>Focus on your personal experience with the tool</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
+                    <span>Provide specific examples when possible</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
+                    <span>Keep it professional and respectful</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
+                    <span>Reviews will be verified before publication</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Hide the default radio buttons for star rating */
+input[type="radio"][name="{{ form.rating.html_name }}"] {
+    display: none;
+}
+
+/* Star rating hover effect */
+.star-rating label:hover ~ label i,
+.star-rating label:hover i {
+    color: #FCD34D !important;
+}
+</style>
+
+<script>
+// Star rating interaction
+document.addEventListener('DOMContentLoaded', function() {
+    const ratingContainer = document.querySelector('.star-rating')?.parentElement;
+    if (!ratingContainer) return;
+    
+    const stars = ratingContainer.querySelectorAll('label');
+    const radios = ratingContainer.querySelectorAll('input[type="radio"]');
+    
+    stars.forEach((star, index) => {
+        star.addEventListener('click', function() {
+            // Update all stars
+            stars.forEach((s, i) => {
+                const icon = s.querySelector('i');
+                if (i <= index) {
+                    icon.classList.remove('text-gray-300');
+                    icon.classList.add('text-yellow-400');
+                } else {
+                    icon.classList.remove('text-yellow-400');
+                    icon.classList.add('text-gray-300');
+                }
+            });
+        });
+        
+        // Hover effect
+        star.addEventListener('mouseenter', function() {
+            stars.forEach((s, i) => {
+                const icon = s.querySelector('i');
+                if (i <= index) {
+                    icon.classList.add('text-yellow-300');
+                }
+            });
+        });
+        
+        star.addEventListener('mouseleave', function() {
+            stars.forEach((s) => {
+                const icon = s.querySelector('i');
+                icon.classList.remove('text-yellow-300');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

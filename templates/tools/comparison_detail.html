@@ -202,11 +202,62 @@
                 <h2 class="text-3xl font-bold text-gray-900 mb-6">Detailed Analysis</h2>
                 {% for section_key, section_content in comparison.sections.items %}
                 <div class="bg-white shadow-md rounded-lg p-8 mb-6">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4 capitalize">
-                        {{ section_key|title }}
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">
+                        {{ section_key }}
                     </h3>
-                    <div class="prose prose-lg max-w-none text-gray-700">
-                        {{ section_content|linebreaks }}
+                    
+                    <!-- Structured comparison for tool-by-tool data -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% for tool_name, tool_data in section_content.items %}
+                        <div class="border border-gray-200 rounded-lg p-6">
+                            <h4 class="text-xl font-bold text-blue-600 mb-3">{{ tool_name|title }}</h4>
+                            
+                            {% if tool_data.description %}
+                            <p class="text-gray-700 mb-4">{{ tool_data.description }}</p>
+                            {% endif %}
+                            
+                            {% if tool_data.details %}
+                            <div class="mb-4">
+                                <h5 class="font-semibold text-gray-900 mb-2">Details:</h5>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    {% for detail in tool_data.details %}
+                                    <li>{{ detail }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="grid grid-cols-2 gap-4 mt-4">
+                                {% if tool_data.pros %}
+                                <div>
+                                    <h5 class="font-semibold text-green-600 mb-2">✓ Pros:</h5>
+                                    <ul class="space-y-1 text-sm text-gray-700">
+                                        {% for pro in tool_data.pros %}
+                                        <li class="flex items-start">
+                                            <span class="text-green-500 mr-1">•</span>
+                                            <span>{{ pro }}</span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                                
+                                {% if tool_data.cons %}
+                                <div>
+                                    <h5 class="font-semibold text-red-600 mb-2">✗ Cons:</h5>
+                                    <ul class="space-y-1 text-sm text-gray-700">
+                                        {% for con in tool_data.cons %}
+                                        <li class="flex items-start">
+                                            <span class="text-red-500 mr-1">•</span>
+                                            <span>{{ con }}</span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
                 {% endfor %}

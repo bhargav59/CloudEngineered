@@ -114,6 +114,11 @@ class Article(TimeStampedModel, SlugModel, SEOModel, PublishableModel, ViewCount
         if not self.slug:
             self.slug = slugify(self.title)
         
+        # Ensure slug doesn't contain forward slashes (invalid for URLs)
+        # Replace any remaining invalid characters with hyphens
+        import re
+        self.slug = re.sub(r'[^-a-zA-Z0-9_]', '-', self.slug)
+        
         # Calculate reading time and word count
         if self.content:
             words = len(self.content.split())

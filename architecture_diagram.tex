@@ -1,0 +1,112 @@
+\documentclass[tikz,border=15pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, patterns}
+
+\tikzstyle{box} = [rectangle, rounded corners=3pt, minimum width=3.5cm, minimum height=1.1cm, text centered, draw=black, line width=0.7pt, fill=white, font=\footnotesize]
+\tikzstyle{layerbox} = [rectangle, rounded corners=5pt, minimum width=18cm, minimum height=3.2cm, draw=black, line width=1pt, fill=white]
+\tikzstyle{arrow} = [->,>=Stealth,line width=0.5pt]
+\tikzstyle{labelstyle} = [font=\small\bfseries]
+
+\begin{document}
+
+\begin{tikzpicture}[node distance=1.5cm and 0.8cm]
+
+% Title
+\node[font=\Large\bfseries] at (0, 16.5) {CloudEngineered System Architecture};
+
+% Layer 4: Data Layer (Bottom)
+\node[layer, pattern=north east lines, pattern color=black!10] (data-layer) at (0, 0) {};
+\node[font=\bfseries, above=0.2cm] at (data-layer.north) {DATA LAYER};
+
+\node[box] (database) at (-4, 0) {SQLite\\Database};
+\node[box] (cache) at (0, 0) {Redis\\Cache};
+\node[box] (celery-broker) at (4, 0) {Celery Message\\Queue};
+
+% Layer 3: Service Layer
+\node[layer, pattern=horizontal lines, pattern color=black!10] (service-layer) at (0, 4) {};
+\node[font=\bfseries, above=0.2cm] at (service-layer.north) {SERVICE LAYER};
+
+\node[box] (ai-service) at (-5.5, 4) {AI Service\\(Multi-Provider)};
+\node[box] (github-service) at (-1.8, 4) {GitHub\\Integration};
+\node[box] (content-service) at (1.8, 4) {Content\\Generator};
+\node[box] (analytics-service) at (5.5, 4) {Analytics\\Engine};
+
+% Layer 2: Application Layer
+\node[layer, pattern=dots, pattern color=black!10] (app-layer) at (0, 8) {};
+\node[font=\bfseries, above=0.2cm] at (app-layer.north) {APPLICATION LAYER (Django)};
+
+\node[box] (core) at (-5.5, 8) {Core\\Module};
+\node[box] (tools) at (-1.8, 8) {Tools\\Module};
+\node[box] (content) at (1.8, 8) {Content\\Module};
+\node[box] (api) at (5.5, 8) {REST API\\Module};
+
+% Layer 1: User Interface (Top)
+\node[layer, pattern=vertical lines, pattern color=black!10] (ui-layer) at (0, 11.5) {};
+\node[font=\bfseries, above=0.2cm] at (ui-layer.north) {USER INTERFACE LAYER};
+
+\node[box] (web-ui) at (-3, 11.5) {Web Interface\\(Templates)};
+\node[box] (api-clients) at (3, 11.5) {API Clients\\(Third-party)};
+
+% External Services (Right side)
+\node[external-box] (openrouter) at (10, 10.5) {OpenRouter\\(DeepSeek)};
+\node[external-box] (openai) at (10, 8.5) {OpenAI\\(GPT-4)};
+\node[external-box] (gemini) at (10, 6.5) {Google\\Gemini};
+\node[external-box] (github-api) at (10, 4.5) {GitHub\\API};
+\node[external-box] (sentry) at (10, 2.5) {Sentry\\Monitoring};
+
+% External Services Label with box
+\node[draw, line width=1.2pt, rounded corners, minimum width=3cm, minimum height=8.5cm] at (10, 6.5) {};
+\node[font=\bfseries] at (10, 12.3) {EXTERNAL SERVICES};
+
+% Arrows - Data Layer to Service Layer
+\draw[arrow] (database.north) -- (ai-service.south);
+\draw[arrow] (database.north) -- (github-service.south);
+\draw[arrow] (database.north) -- (content-service.south);
+\draw[arrow] (database.north) -- (analytics-service.south);
+\draw[bidir] (cache.north) -- (content-service.south);
+\draw[arrow] (celery-broker.north) -- (content-service.south);
+
+% Arrows - Service Layer to Application Layer
+\draw[arrow] (ai-service.north) -- (core.south);
+\draw[arrow] (github-service.north) -- (tools.south);
+\draw[arrow] (content-service.north) -- (content.south);
+\draw[arrow] (analytics-service.north) -- (api.south);
+
+% Arrows - Application Layer to UI Layer
+\draw[arrow] (core.north) -- (web-ui.south);
+\draw[arrow] (tools.north) -- (web-ui.south);
+\draw[arrow] (content.north) -- (web-ui.south);
+\draw[arrow] (api.north) -- (api-clients.south);
+
+% Arrows - External Services
+\draw[bidir] (ai-service.east) -- (openrouter.west);
+\draw[bidir] (ai-service.east) -- (openai.west);
+\draw[bidir] (ai-service.east) -- (gemini.west);
+\draw[bidir] (github-service.east) -- (github-api.west);
+\draw[arrow] (core.east) -- (sentry.west);
+\draw[arrow] (api.east) -- (sentry.west);
+
+% Key Features Box (Left side)
+\node[draw, line width=1.2pt, rounded corners, align=left, text width=3.2cm, minimum height=4.5cm] at (-10, 11) {
+    \textbf{KEY FEATURES:}\\[0.3cm]
+    $\bullet$ Multi-tier caching\\[0.15cm]
+    $\bullet$ Async processing\\[0.15cm]
+    $\bullet$ Real-time monitoring\\[0.15cm]
+    $\bullet$ SEO optimization\\[0.15cm]
+    $\bullet$ Auto content gen\\[0.15cm]
+    $\bullet$ GitHub integration
+};
+
+% Performance Metrics Box (Left side)
+\node[draw, line width=1.2pt, rounded corners, align=left, text width=3.2cm, minimum height=5cm] at (-10, 5) {
+    \textbf{PERFORMANCE:}\\[0.3cm]
+    $\bullet$ 45ms response\\[0.15cm]
+    $\bullet$ 89\% cache hit\\[0.15cm]
+    $\bullet$ 10K users\\[0.15cm]
+    $\bullet$ 95\% automation\\[0.15cm]
+    $\bullet$ 96\% quality
+};
+
+\end{tikzpicture}
+
+\end{document}

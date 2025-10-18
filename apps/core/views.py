@@ -51,10 +51,10 @@ class HomeView(TemplateView):
             tools_count=Count('tools')
         ).filter(tools_count__gt=0).order_by('-tools_count')[:6]
         
-        # Featured categories (for homepage hero/sections)
+        # Featured categories (for homepage hero/sections) - also annotate with tool count
         context['featured_categories'] = Category.objects.filter(
             is_featured=True
-        ).order_by('sort_order')[:6]
+        ).annotate(tools_count=Count('tools')).order_by('sort_order')[:6]
         
         # Stats for homepage
         context['stats'] = {
@@ -88,7 +88,7 @@ class SearchView(ListView):
 
         # Search in tools (if not filtered to articles only)
         if content_type != 'articles':
-            tool_query = Tool.objects.select_related('category', 'created_by')
+            tool_query = Tool.objects.select_related('category')
             
             if query:
                 tool_query = tool_query.filter(
@@ -111,9 +111,9 @@ class SearchView(ListView):
                     tool_query = tool_query.extra(
                         select={
                             'relevance': "CASE "
-                                       "WHEN name ILIKE %s THEN 3 "
-                                       "WHEN description ILIKE %s THEN 2 "
-                                       "WHEN features ILIKE %s THEN 1 "
+                                       "WHEN tools_tool.name LIKE %s THEN 3 "
+                                       "WHEN tools_tool.description LIKE %s THEN 2 "
+                                       "WHEN tools_tool.features LIKE %s THEN 1 "
                                        "ELSE 0 END"
                         },
                         select_params=[f'%{query}%', f'%{query}%', f'%{query}%']
@@ -126,7 +126,7 @@ class SearchView(ListView):
                     'title': tool.name,
                     'description': tool.description,
                     'url': tool.get_absolute_url(),
-                    'image': tool.image.url if tool.image else None,
+                    'image': tool.logo.url if tool.logo else None,
                     'category': tool.category.name if tool.category else None,
                     'created_at': tool.created_at,
                 })
@@ -155,21 +155,26 @@ class SearchView(ListView):
                     article_query = article_query.extra(
                         select={
                             'relevance': "CASE "
-                                       "WHEN title ILIKE %s THEN 3 "
-                                       "WHEN excerpt ILIKE %s THEN 2 "
-                                       "WHEN content ILIKE %s THEN 1 "
+                                       "WHEN title LIKE %s THEN 3 "
+                                       "WHEN excerpt LIKE %s THEN 2 "
+                                       "WHEN content LIKE %s THEN 1 "
                                        "ELSE 0 END"
                         },
                         select_params=[f'%{query}%', f'%{query}%', f'%{query}%']
                     ).order_by('-relevance', '-created_at')
 
             for article in article_query:
+                try:
+                    url = article.get_absolute_url()
+                except:
+                    url = '#'  # Fallback for invalid slugs
+                
                 results.append({
                     'type': 'article',
                     'object': article,
                     'title': article.title,
                     'description': article.excerpt or (article.content[:200] + '...' if len(article.content) > 200 else article.content),
-                    'url': article.get_absolute_url(),
+                    'url': url,
                     'image': article.featured_image.url if hasattr(article, 'featured_image') and article.featured_image else None,
                     'created_at': article.created_at,
                 })

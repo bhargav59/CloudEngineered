@@ -1,8 +1,12 @@
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView, DetailView
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView, DetailView, CreateView
 from django.db.models import Q, Count, Avg
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.urls import reverse
 from .models import Category, Tool, ToolComparison, ToolReview
+from .forms import ToolReviewForm
 from apps.content.models import Article
 
 
@@ -223,3 +227,34 @@ def comparison_detail(request, slug):
     """Show comparison detail."""
     view = ComparisonDetailView.as_view()
     return view(request, slug=slug)
+
+
+@login_required
+def create_review(request, category, slug):
+    """Create a new review for a tool."""
+    tool = get_object_or_404(Tool, slug=slug, category__slug=category, is_published=True)
+    
+    # Check if user has already reviewed this tool
+    existing_review = ToolReview.objects.filter(tool=tool, user=request.user).first()
+    if existing_review:
+        messages.warning(request, 'You have already reviewed this tool. You can edit your existing review.')
+        return redirect('tools:tool_detail', category=category, slug=slug)
+    
+    if request.method == 'POST':
+        form = ToolReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.tool = tool
+            review.user = request.user
+            review.save()
+            messages.success(request, 'Thank you for your review! It will be published after verification.')
+            return redirect('tools:tool_detail', category=category, slug=slug)
+    else:
+        form = ToolReviewForm()
+    
+    context = {
+        'form': form,
+        'tool': tool,
+        'page_title': f'Write a Review - {tool.name}',
+    }
+    return render(request, 'tools/review_form.html', context)

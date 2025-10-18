@@ -51,7 +51,6 @@ def markdown_filter(text):
             'code-friendly',
             'cuddled-lists',
             'footnotes',
-            'link-patterns',
             'smarty-pants',
         ]
     )

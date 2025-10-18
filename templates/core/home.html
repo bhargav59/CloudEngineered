@@ -200,13 +200,19 @@
             {% for category in featured_categories %}
             <a href="{% url 'tools:tool_list' category.slug %}" class="group">
                 <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 text-center hover:from-blue-50 hover:to-purple-50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
-                    <div class="text-4xl mb-3">{{ category.icon|default:"🔧" }}</div>
+                    <div class="text-4xl mb-3">
+                        {% if "fa-" in category.icon %}
+                            <i class="{{ category.icon }}"></i>
+                        {% else %}
+                            {{ category.icon|default:"🔧" }}
+                        {% endif %}
+                    </div>
                     <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
                         {{ category.name }}
                     </h3>
                     <p class="text-sm text-gray-600 mb-3">{{ category.description|truncatechars:80 }}</p>
                     <div class="text-xs text-blue-600 font-medium">
-                        {{ category.tools_count }} tool{{ category.tools_count|pluralize }}
+                        {{ category.tool_count }} tool{{ category.tool_count|pluralize }}
                     </div>
                 </div>
             </a>
@@ -268,7 +274,7 @@
                     
                     <div class="flex items-center justify-between text-sm text-gray-500">
                         <span>{{ article.created_at|date:"M d, Y" }}</span>
-                        <span>{{ article.read_time|default:"5" }} min read</span>
+                        <span>{{ article.reading_time|default:"5" }} min read</span>
                     </div>
                     
                     <a href="{% url 'content:article_detail' article.slug %}" class="mt-4 inline-flex items-center text-blue-600 font-medium hover:text-blue-700 transition-colors duration-200">
@@ -475,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     {% endif %}
                     <h3 class="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{{ category.name }}</h3>
-                    <p class="text-sm text-gray-500 mt-1">{{ category.tools_count }} tools</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ category.tool_count }} tools</p>
                 </div>
             </a>
             {% endfor %}

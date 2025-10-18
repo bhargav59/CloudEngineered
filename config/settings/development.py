@@ -7,7 +7,13 @@ from .base import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Allow Codespaces, localhost, and wildcard for development
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '*']
+
+# Add Codespaces hostname if available
+CODESPACE_NAME = config('CODESPACE_NAME', default='')
+if CODESPACE_NAME:
+    ALLOWED_HOSTS.append(f'{CODESPACE_NAME}-8000.app.github.dev')
 
 # Development database (can use SQLite for quick development)
 if config('USE_SQLITE', default=False, cast=bool):
@@ -30,6 +36,14 @@ INTERNAL_IPS = [
     '127.0.0.1',
     'localhost',
 ]
+
+# Codespaces support - allow port forwarding
+if CODESPACE_NAME:
+    # Disable CSRF for Codespaces preview (development only)
+    CSRF_TRUSTED_ORIGINS = [
+        f'https://{CODESPACE_NAME}-8000.app.github.dev',
+        f'https://*.app.github.dev',
+    ]
 
 # Development static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
@@ -59,7 +73,14 @@ if config('DISABLE_CACHE', default=False, cast=bool):
         }
     }
 
-# Development logging - more verbose
-LOGGING['handlers']['console']['level'] = 'DEBUG'
+# Development logging - reduce autoreload noise
+LOGGING['handlers']['console']['level'] = 'INFO'  # Changed from DEBUG
 LOGGING['loggers']['apps']['level'] = 'DEBUG'
-LOGGING['loggers']['django']['level'] = 'DEBUG'
+LOGGING['loggers']['django']['level'] = 'INFO'  # Changed from DEBUG
+
+# Silence Django's autoreload file watching messages
+LOGGING['loggers']['django.utils.autoreload'] = {
+    'handlers': ['console'],
+    'level': 'WARNING',  # Only show warnings/errors from autoreload
+    'propagate': False,
+}

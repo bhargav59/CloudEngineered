@@ -30,10 +30,11 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'django_filters',
     'django_extensions',
-    # Commenting out optional packages for initial setup
-    # 'allauth',
-    # 'allauth.account',
-    # 'allauth.socialaccount',
+    # Authentication
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    # Commenting out other optional packages for initial setup
     # 'crispy_forms',
     # 'crispy_tailwind',
     # 'imagekit',
@@ -69,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # Required for django-allauth
     'apps.core.throttling.RateLimitMiddleware',  # Rate limiting
     'apps.core.middleware.PerformanceMonitoringMiddleware',  # Performance monitoring
     # Phase 2-3 middleware (commented out until all dependencies are ready)
@@ -282,11 +284,16 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# Updated allauth settings for latest version
+ACCOUNT_LOGIN_METHODS = {'email'}  # Use email for login (replaces ACCOUNT_AUTHENTICATION_METHOD)
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']  # Required signup fields
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_UNIQUE_EMAIL = True
+
+# Deprecated settings (keeping for backwards compatibility, but can be removed)
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_USERNAME_REQUIRED = False
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
 # Crispy Forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
