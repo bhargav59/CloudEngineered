@@ -1,0 +1,43 @@
+# Terraform Variables Example for CloudEngineered
+# Copy this file to terraform.tfvars and fill in your values
+
+# AWS Configuration
+aws_region = "us-east-1"
+environment = "prod"
+
+# Network Configuration
+vpc_cidr = "10.0.0.0/16"
+allowed_ssh_cidr_blocks = ["YOUR_IP_ADDRESS/32"]  # Replace with your IP for security
+
+# Database Configuration
+db_instance_class = "db.t3.micro"
+db_allocated_storage = 20
+db_name = "cloudengineered"
+db_username = "cloudengineered"
+db_password = "CHANGE_THIS_SECURE_PASSWORD"
+
+# Redis Configuration
+redis_node_type = "cache.t3.micro"
+
+# S3 Configuration
+static_bucket_name = "cloudengineered-static-2025"  # Must be globally unique
+
+# EC2 Configuration
+ec2_ami_id = "ami-0c7217cdde317cfec"  # Amazon Linux 2 in us-east-1
+ec2_instance_type = "t3.medium"
+key_pair_name = "your-key-pair-name"
+
+# Domain Configuration (optional - leave empty to skip SSL/Route53)
+domain_name = ""  # e.g., "yourdomain.com"
+
+# Django Configuration
+django_secret_key = "CHANGE_THIS_TO_A_SECURE_RANDOM_KEY_32_CHARS_MIN"
+
+# API Keys (optional)
+openai_api_key = ""
+anthropic_api_key = ""
+github_token = ""
+
+# Email Configuration (optional)
+ses_smtp_user = ""
+ses_smtp_password = ""
