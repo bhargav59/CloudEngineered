@@ -264,7 +264,7 @@ resource "aws_db_subnet_group" "main" {
 resource "aws_db_instance" "main" {
   identifier             = "cloudengineered-db"
   engine                 = "postgres"
-  engine_version         = "15.4"
+  engine_version         = "15.14"
   instance_class         = var.db_instance_class
   allocated_storage      = var.db_allocated_storage
   storage_type           = "gp2"

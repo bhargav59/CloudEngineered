@@ -12,19 +12,17 @@ echo "Starting CloudEngineered setup..."
 # Update system packages
 yum update -y
 
-# Install required packages
+# Install required packages for Amazon Linux 2023
 yum install -y \
     docker \
     git \
     python3 \
     python3-pip \
-    postgresql \
-    postgresql-devel \
+    postgresql15 \
+    postgresql15-devel \
     gcc \
     python3-devel \
-    nginx \
-    certbot \
-    python3-certbot-nginx
+    nginx
 
 # Start and enable Docker
 systemctl start docker
@@ -46,43 +44,43 @@ git checkout main
 cat > .env.prod << EOF
 # Django Configuration
 DEBUG=False
-SECRET_KEY=${SECRET_KEY:-$(openssl rand -hex 32)}
-ALLOWED_HOSTS=localhost,127.0.0.1,${PUBLIC_IP:-127.0.0.1},${LOAD_BALANCER_DNS:-127.0.0.1}
+SECRET_KEY=$${SECRET_KEY:-$(openssl rand -hex 32)}
+ALLOWED_HOSTS=localhost,127.0.0.1,$${PUBLIC_IP:-127.0.0.1},$${LOAD_BALANCER_DNS:-127.0.0.1}
 
 # Database Configuration
-DB_NAME=${DB_NAME}
-DB_USER=${DB_USER}
-DB_PASSWORD=${DB_PASSWORD}
-DB_HOST=${DB_HOST}
+DB_NAME=$${DB_NAME}
+DB_USER=$${DB_USER}
+DB_PASSWORD=$${DB_PASSWORD}
+DB_HOST=$${DB_HOST}
 DB_PORT=5432
 
 # Redis Configuration
-REDIS_URL=redis://${REDIS_HOST}:6379/0
+REDIS_URL=redis://$${REDIS_HOST}:6379/0
 
 # AWS Configuration
-AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-AWS_STORAGE_BUCKET_NAME=${S3_BUCKET}
-AWS_S3_REGION_NAME=${AWS_REGION}
-AWS_S3_CUSTOM_DOMAIN=${S3_BUCKET}.s3.${AWS_REGION}.amazonaws.com
+AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID}
+AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY}
+AWS_STORAGE_BUCKET_NAME=$${S3_BUCKET}
+AWS_S3_REGION_NAME=$${AWS_REGION}
+AWS_S3_CUSTOM_DOMAIN=$${S3_BUCKET}.s3.$${AWS_REGION}.amazonaws.com
 
 # Static and Media files
-STATIC_URL=https://${CLOUDFRONT_DOMAIN}/static/
-MEDIA_URL=https://${CLOUDFRONT_DOMAIN}/media/
+STATIC_URL=https://$${CLOUDFRONT_DOMAIN}/static/
+MEDIA_URL=https://$${CLOUDFRONT_DOMAIN}/media/
 DEFAULT_FILE_STORAGE=storages.backends.s3boto3.S3Boto3Storage
 
 # API Keys
-OPENAI_API_KEY=${OPENAI_API_KEY:-}
-ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-GITHUB_TOKEN=${GITHUB_TOKEN:-}
+OPENAI_API_KEY=$${OPENAI_API_KEY:-}
+ANTHROPIC_API_KEY=$${ANTHROPIC_API_KEY:-}
+GITHUB_TOKEN=$${GITHUB_TOKEN:-}
 
 # Email Configuration
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=email-smtp.${AWS_REGION}.amazonaws.com
+EMAIL_HOST=email-smtp.$${AWS_REGION}.amazonaws.com
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-EMAIL_HOST_USER=${SES_SMTP_USER:-}
-EMAIL_HOST_PASSWORD=${SES_SMTP_PASSWORD:-}
+EMAIL_HOST_USER=$${SES_SMTP_USER:-}
+EMAIL_HOST_PASSWORD=$${SES_SMTP_PASSWORD:-}
 
 # Security
 SECURE_SSL_REDIRECT=True
@@ -95,8 +93,8 @@ SESSION_COOKIE_SECURE=True
 CSRF_COOKIE_SECURE=True
 
 # Celery
-CELERY_BROKER_URL=redis://${REDIS_HOST}:6379/0
-CELERY_RESULT_BACKEND=redis://${REDIS_HOST}:6379/0
+CELERY_BROKER_URL=redis://$${REDIS_HOST}:6379/0
+CELERY_RESULT_BACKEND=redis://$${REDIS_HOST}:6379/0
 EOF
 
 # Create logs directory
@@ -113,7 +111,7 @@ chown -R ec2-user:ec2-user /opt/cloudengineered
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
 for i in {1..30}; do
-    if psql -h ${DB_HOST} -U ${DB_USER} -d postgres -c "SELECT 1;" >/dev/null 2>&1; then
+    if psql -h $${DB_HOST} -U $${DB_USER} -d postgres -c "SELECT 1;" >/dev/null 2>&1; then
         echo "Database is ready!"
         break
     fi
@@ -122,7 +120,7 @@ for i in {1..30}; do
 done
 
 # Create database if it doesn't exist
-psql -h ${DB_HOST} -U ${DB_USER} -c "CREATE DATABASE ${DB_NAME};" || echo "Database ${DB_NAME} already exists"
+psql -h $${DB_HOST} -U $${DB_USER} -c "CREATE DATABASE $${DB_NAME};" || echo "Database $${DB_NAME} already exists"
 
 # Build and start application
 cd /opt/cloudengineered
@@ -232,11 +230,11 @@ mkdir -p $BACKUP_DIR
 
 # Backup database
 echo "Backing up database..."
-pg_dump -h $DB_HOST -U $DB_USER -d $DB_NAME | gzip > $BACKUP_DIR/db_backup_$DATE.sql.gz
+pg_dump -h $$DB_HOST -U $$DB_USER -d $$DB_NAME | gzip > $$BACKUP_DIR/db_backup_$$DATE.sql.gz
 
 # Backup media files
 echo "Backing up media files..."
-aws s3 sync /opt/cloudengineered/mediafiles/ s3://$S3_BUCKET/backups/media/$DATE/
+aws s3 sync /opt/cloudengineered/mediafiles/ s3://$$S3_BUCKET/backups/media/$$DATE/
 
 # Clean old backups (keep last 7 days)
 find $BACKUP_DIR -name "db_backup_*.sql.gz" -mtime +7 -delete
@@ -262,7 +260,7 @@ echo "Docker containers:"
 docker-compose -f /opt/cloudengineered/docker-compose.prod.yml ps
 
 echo -e "\nApplication health:"
-curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://localhost/health/
+curl -s -o /dev/null -w "HTTP Status: %%{http_code}\n" http://localhost/health/
 
 echo -e "\nDisk usage:"
 df -h /opt/cloudengineered
@@ -278,7 +276,7 @@ chmod +x /opt/cloudengineered/monitor.sh
 
 # Final setup complete
 echo "CloudEngineered setup completed successfully!"
-echo "Application should be available at: http://${PUBLIC_IP:-127.0.0.1}"
+echo "Application should be available at: http://$${PUBLIC_IP:-127.0.0.1}"
 echo ""
 echo "To check logs: docker-compose -f /opt/cloudengineered/docker-compose.prod.yml logs -f web"
 echo "To restart: docker-compose -f /opt/cloudengineered/docker-compose.prod.yml restart"
