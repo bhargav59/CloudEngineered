@@ -5,45 +5,56 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV DJANGO_SETTINGS_MODULE=config.settings.production
 
 # Set work directory
 WORKDIR /app
 
-# Install only essential system dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
     libpq-dev \
     gcc \
+    g++ \
+    make \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /tmp/* /var/tmp/*
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY requirements/base.txt requirements/production.txt ./requirements/
+# Upgrade pip and install build tools
+RUN pip install --upgrade pip setuptools wheel
 
-# Install Python dependencies with optimizations
-RUN pip install --no-cache-dir -r requirements/production.txt \
-    && find /usr/local/lib/python3.11/site-packages -name "*.pyc" -delete \
-    && find /usr/local/lib/python3.11/site-packages -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+# Copy requirements first for better layer caching
+COPY requirements/ ./requirements/
 
-# Copy only necessary project files
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements/production.txt
+
+# Copy project files
 COPY manage.py start.sh ./
 COPY config/ ./config/
 COPY apps/ ./apps/
 COPY templates/ ./templates/
 COPY static/ ./static/
 
-# Create directories and set permissions
-RUN mkdir -p /app/staticfiles /app/media \
-    && chmod +x /app/start.sh \
-    && adduser --disabled-password --gecos '' --uid 1000 cloudengineered \
+# Create directories
+RUN mkdir -p /app/staticfiles /app/media /app/logs
+
+# Make start script executable
+RUN chmod +x /app/start.sh
+
+# Create non-root user and set permissions
+RUN adduser --disabled-password --gecos '' --uid 1000 cloudengineered \
     && chown -R cloudengineered:cloudengineered /app
 
 # Switch to non-root user
 USER cloudengineered
 
-# Expose port
+# Expose port (Railway sets $PORT dynamically)
 EXPOSE 8000
 
-# Start via optimized start script
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8000/health/', timeout=5)" || exit 1
+
+# Start application
 CMD ["./start.sh"]
