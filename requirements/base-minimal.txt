@@ -17,12 +17,15 @@ django-redis>=5.3.0
 celery>=5.3.0
 django-celery-beat>=2.5.0
 django-celery-results>=2.5.0
+kombu>=5.3.0  # Celery dependency
+vine>=5.0.0   # Celery dependency
 
 # API and JWT
 djangorestframework-simplejwt>=5.3.0
 
 # Environment Configuration
 django-environ>=0.11.2
+python-decouple>=3.8
 
 # Basic web scraping (lightweight)
 beautifulsoup4==4.12.2
@@ -41,24 +44,40 @@ six>=1.16.0
 
 # Storage
 boto3>=1.28.0  # For S3 static files (optional)
+django-storages>=1.14.0
 
 # Email
 django-anymail>=10.2  # Email service integration
+sendgrid>=6.10.0
+django-ses>=3.5.0
 
 # Forms and validation
 django-crispy-forms>=2.0
 
 # Monitoring
 sentry-sdk>=1.38.0  # Error tracking (lightweight)
+structlog>=23.0.0
+
+# Health checks
+django-health-check>=3.17.0
 
 # Payment processing
 stripe>=7.0.0
+
+# Authentication
+django-allauth>=0.57.0
+PyJWT>=2.8.0
+cryptography>=41.0.0
 
 # Social authentication (optional)
 social-auth-app-django>=5.0.0
 
 # Admin enhancements
 django-import-export>=3.3.0
+django-widget-tweaks>=1.4.12
+
+# API Documentation
+drf-spectacular>=0.26.0
 
 # Content management
 markdown>=3.5.0
