@@ -75,17 +75,22 @@ else:
     print('✅ Superuser already exists.')
 END
 
-# Start the application with Gunicorn
+# Start the application with Gunicorn (optimized for Railway free tier)
 echo "🌟 Starting Django application with Gunicorn on port $PORT..."
-echo "📊 Workers: 3, Threads per worker: 2"
+echo "📊 Workers: 2, Threads per worker: 2 (Railway Free Tier Optimized)"
+
+# Use environment variables for configuration with sensible defaults
+WORKERS=${GUNICORN_WORKERS:-2}
+THREADS=${GUNICORN_THREADS:-2}
+TIMEOUT=${GUNICORN_TIMEOUT:-120}
 
 exec gunicorn config.wsgi:application \
     --bind "0.0.0.0:${PORT}" \
-    --workers 3 \
+    --workers $WORKERS \
     --worker-class gthread \
-    --threads 2 \
+    --threads $THREADS \
     --worker-tmp-dir /dev/shm \
-    --timeout 120 \
+    --timeout $TIMEOUT \
     --graceful-timeout 30 \
     --keep-alive 2 \
     --max-requests 1000 \

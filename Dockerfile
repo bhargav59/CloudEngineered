@@ -26,8 +26,8 @@ RUN pip install --upgrade pip setuptools wheel
 # Copy requirements first for better layer caching
 COPY requirements/ ./requirements/
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements/production.txt
+# Install Python dependencies (minimal version for Railway free tier)
+RUN pip install --no-cache-dir -r requirements/production-minimal.txt
 
 # Copy project files
 COPY manage.py start.sh ./

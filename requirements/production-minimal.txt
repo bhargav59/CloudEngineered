@@ -1,0 +1,18 @@
+# Production dependencies without heavy AI/ML libraries
+# Optimized for Railway free tier deployment
+
+# Base requirements (lightweight subset)
+-r base-minimal.txt
+
+# Production-specific
+gunicorn>=21.0.0
+psycopg2-binary>=2.9.7
+whitenoise>=6.6.0
+dj-database-url>=2.1.0
+
+# Security
+django-csp>=3.7
+django-ratelimit>=4.1.0
+
+# Monitoring (lightweight)
+prometheus-client>=0.19.0
