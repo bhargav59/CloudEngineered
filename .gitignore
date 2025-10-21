@@ -67,3 +67,22 @@ coverage.xml
 # Static files (collected)
 staticfiles/
 .venv-1/
+
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate.lock.info
+
+# Large binaries and downloads
+*.zip
+*.tar.gz
+*.tgz
+*.exe
+*.dmg
+*.iso
+*.img
+
+# AWS CLI and providers
+awscliv2.zip
+terraform-provider-aws*

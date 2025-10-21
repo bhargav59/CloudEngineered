@@ -122,14 +122,14 @@ Once approved:
 2. Copy both keys:
    ```
    Publishable: pk_test_XXXXX
-   Secret: sk_test_YOUR_SECRET_KEY_HERE
+   Secret: sk_test_YOUR_SECRET_KEY_HERE_SECRET_KEY_HERE
    ```
 
 3. Add to environment:
 
 ```bash
 export STRIPE_PUBLIC_KEY="pk_test_XXXXXXXXXXXXXXXXXXXXXXXX"
-export STRIPE_SECRET_KEY="sk_test_YOUR_SECRET_KEY_HERE"
+export STRIPE_SECRET_KEY="sk_test_YOUR_SECRET_KEY_HERE_SECRET_KEY_HERE"
 ```
 
 ### Step 3: Create Products (20 minutes)
