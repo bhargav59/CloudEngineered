@@ -3,10 +3,201 @@
 {% block title %}About Us - {{ site_name }}{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-4">About CloudEngineered</h1>
-    <p class="text-lg text-gray-700">
-        CloudEngineered is a platform dedicated to providing comprehensive reviews, comparisons, and guides for cloud engineering and DevOps tools. Our mission is to help developers and engineers make informed decisions about the tools they use every day.
-    </p>
-</div>
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 animate-fade-in">
+                About CloudEngineered
+            </h1>
+            <p class="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+                Empowering developers and engineers to make informed decisions about cloud and DevOps tools
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Mission Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Mission</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                To provide comprehensive, unbiased reviews and comparisons that help teams choose the right tools for their infrastructure
+            </p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Card 1 -->
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-8 border border-blue-100 hover:shadow-xl transition-shadow duration-300">
+                <div class="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-search text-3xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Comprehensive Reviews</h3>
+                <p class="text-gray-700 leading-relaxed">
+                    In-depth analysis of cloud engineering and DevOps tools, covering features, pricing, pros & cons, and real-world use cases.
+                </p>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-8 border border-green-100 hover:shadow-xl transition-shadow duration-300">
+                <div class="w-16 h-16 bg-green-600 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-balance-scale text-3xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Side-by-Side Comparisons</h3>
+                <p class="text-gray-700 leading-relaxed">
+                    Compare tools directly to understand which solution best fits your team's needs, budget, and technical requirements.
+                </p>
+            </div>
+            
+            <!-- Card 3 -->
+            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-8 border border-purple-100 hover:shadow-xl transition-shadow duration-300">
+                <div class="w-16 h-16 bg-purple-600 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-book-open text-3xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Expert Guides</h3>
+                <p class="text-gray-700 leading-relaxed">
+                    Learn from practical guides and tutorials that help you implement and optimize your cloud infrastructure and CI/CD pipelines.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Story Section -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                    Why CloudEngineered?
+                </h2>
+                <div class="space-y-4 text-lg text-gray-700 leading-relaxed">
+                    <p>
+                        In today's rapidly evolving cloud landscape, choosing the right tools can make or break your infrastructure. 
+                        CloudEngineered was created to cut through the noise and provide clear, actionable insights.
+                    </p>
+                    <p>
+                        We understand the challenges teams face when evaluating cloud and DevOps solutions—from overwhelming 
+                        feature lists to hidden costs and integration complexities. That's why we provide real-world perspectives, 
+                        honest assessments, and practical guidance.
+                    </p>
+                    <p>
+                        Whether you're building CI/CD pipelines, managing containers, monitoring infrastructure, or automating 
+                        deployments, CloudEngineered helps you find the tools that truly work for your team.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-6">
+                <!-- Stats -->
+                <div class="bg-white rounded-xl p-6 shadow-md text-center border border-gray-200">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">500+</div>
+                    <div class="text-gray-600 font-medium">Tools Reviewed</div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-md text-center border border-gray-200">
+                    <div class="text-4xl font-bold text-green-600 mb-2">50+</div>
+                    <div class="text-gray-600 font-medium">Categories</div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-md text-center border border-gray-200">
+                    <div class="text-4xl font-bold text-purple-600 mb-2">100+</div>
+                    <div class="text-gray-600 font-medium">Comparisons</div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-md text-center border border-gray-200">
+                    <div class="text-4xl font-bold text-orange-600 mb-2">1000+</div>
+                    <div class="text-gray-600 font-medium">Community Members</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Values Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Core Values</h2>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shield-alt text-3xl text-blue-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Transparency</h3>
+                <p class="text-gray-600">Honest, unbiased reviews with clear disclosure of partnerships</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-3xl text-green-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Accuracy</h3>
+                <p class="text-gray-600">Thoroughly researched content backed by hands-on testing</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-users text-3xl text-purple-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Community</h3>
+                <p class="text-gray-600">Learning from and sharing with the DevOps community</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-rocket text-3xl text-orange-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Innovation</h3>
+                <p class="text-gray-600">Staying current with the latest tools and best practices</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-16 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">
+            Ready to Find Your Perfect Tools?
+        </h2>
+        <p class="text-xl text-blue-100 mb-8">
+            Explore our comprehensive tool database and start making better infrastructure decisions today
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'tools:tool_list' %}" 
+               class="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl">
+                <i class="fas fa-tools mr-2"></i>
+                Browse Tools
+            </a>
+            <a href="{% url 'tools:comparison_list' %}" 
+               class="inline-flex items-center justify-center px-8 py-4 bg-blue-700 text-white font-bold rounded-lg hover:bg-blue-800 transition-all duration-300 border-2 border-white">
+                <i class="fas fa-balance-scale mr-2"></i>
+                View Comparisons
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Get in Touch</h2>
+        <p class="text-lg text-gray-600 mb-8">
+            Have questions, suggestions, or want to collaborate? We'd love to hear from you!
+        </p>
+        <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <a href="{% url 'core:contact' %}" 
+               class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-envelope mr-2"></i>
+                Contact Us
+            </a>
+            <a href="mailto:contact@cloudengineered.com" 
+               class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                <i class="fas fa-paper-plane mr-2"></i>
+                contact@cloudengineered.com
+            </a>
+        </div>
+    </div>
+</section>
 {% endblock %}

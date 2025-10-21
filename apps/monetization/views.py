@@ -277,9 +277,226 @@ def advertise_page(request):
     Display advertising options and sponsored content information.
     """
     context = {
-        'min_budget': settings.SPONSORED_CONTENT_MIN_BUDGET,
-        'cpm': settings.SPONSORED_CONTENT_CPM,
-        'cpc': settings.SPONSORED_CONTENT_CPC,
+        'min_budget': settings.SPONSORED_CONTENT_MIN_BUDGET if hasattr(settings, 'SPONSORED_CONTENT_MIN_BUDGET') else 500,
+        'cpm': settings.SPONSORED_CONTENT_CPM if hasattr(settings, 'SPONSORED_CONTENT_CPM') else 10,
+        'cpc': settings.SPONSORED_CONTENT_CPC if hasattr(settings, 'SPONSORED_CONTENT_CPC') else 2,
     }
     
     return render(request, 'monetization/advertise.html', context)
+
+
+# Additional views for new features
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+
+from .premium_reports import ReportTemplate, PremiumReport
+from .consulting import ConsultingPackage, ConsultingBooking
+from .freemium import (
+    TechStackProfile, CustomRecommendation, 
+    Team, CostCalculator, IntegrationRoadmap
+)
+
+
+# Premium Reports Views
+class ReportListView(ListView):
+    """List all available report templates"""
+    model = ReportTemplate
+    template_name = 'monetization/reports/list.html'
+    context_object_name = 'templates'
+    
+    def get_queryset(self):
+        return ReportTemplate.objects.filter(is_active=True).order_by('sort_order')
+
+
+class ReportDetailView(DetailView):
+    """Detail view for a specific report template"""
+    model = ReportTemplate
+    template_name = 'monetization/reports/detail.html'
+    context_object_name = 'template'
+
+
+class ReportPurchaseView(LoginRequiredMixin, CreateView):
+    """Purchase a premium report"""
+    model = PremiumReport
+    template_name = 'monetization/reports/purchase.html'
+    fields = ['user_inputs']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['template'] = get_object_or_404(
+            ReportTemplate,
+            pk=self.kwargs.get('pk')
+        )
+        return context
+
+
+class MyReportsView(LoginRequiredMixin, ListView):
+    """User's purchased reports"""
+    model = PremiumReport
+    template_name = 'monetization/reports/my_reports.html'
+    context_object_name = 'reports'
+    
+    def get_queryset(self):
+        return PremiumReport.objects.filter(user=self.request.user).order_by('-created_at')
+
+
+# Consulting Views
+class ConsultingListView(ListView):
+    """List all consulting packages"""
+    model = ConsultingPackage
+    template_name = 'monetization/consulting/list.html'
+    context_object_name = 'packages'
+    
+    def get_queryset(self):
+        return ConsultingPackage.objects.filter(is_active=True).order_by('sort_order')
+
+
+class ConsultingDetailView(DetailView):
+    """Detail view for a consulting package"""
+    model = ConsultingPackage
+    template_name = 'monetization/consulting/detail.html'
+    context_object_name = 'package'
+
+
+class ConsultingBookView(LoginRequiredMixin, CreateView):
+    """Book a consulting session"""
+    model = ConsultingBooking
+    template_name = 'monetization/consulting/book.html'
+    fields = [
+        'company_name', 'contact_email', 'contact_phone', 
+        'company_size', 'project_description', 'pain_points', 'goals'
+    ]
+
+
+class MyConsultationsView(LoginRequiredMixin, ListView):
+    """User's consulting bookings"""
+    model = ConsultingBooking
+    template_name = 'monetization/consulting/my_consultations.html'
+    context_object_name = 'bookings'
+    
+    def get_queryset(self):
+        return ConsultingBooking.objects.filter(user=self.request.user).order_by('-scheduled_date')
+
+
+# Affiliate Views
+class AffiliateDashboardView(LoginRequiredMixin, ListView):
+    """Affiliate marketing dashboard"""
+    template_name = 'monetization/affiliate/dashboard.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get affiliate stats
+        from django.db.models import Sum
+        context['total_clicks'] = AffiliateLink.objects.aggregate(Sum('clicks'))['clicks__sum'] or 0
+        context['total_conversions'] = AffiliateLink.objects.aggregate(Sum('conversions'))['conversions__sum'] or 0
+        context['total_revenue'] = AffiliateLink.objects.aggregate(Sum('revenue_generated'))['revenue_generated__sum'] or 0
+        
+        # Get recent affiliate links
+        context['recent_links'] = AffiliateLink.objects.filter(
+            is_active=True
+        ).order_by('-created_at')[:10]
+        
+        return context
+    
+    def get_queryset(self):
+        return AffiliateLink.objects.filter(is_active=True)
+
+
+class AffiliateClickView(LoginRequiredMixin, DetailView):
+    """Handle affiliate link clicks"""
+    model = AffiliateLink
+    
+    def get(self, request, *args, **kwargs):
+        link = self.get_object()
+        link.record_click()
+        return redirect(link.tracking_url)
+
+
+# Sponsored Content View
+class SponsoredContentView(ListView):
+    """Display sponsored content"""
+    model = SponsoredContent
+    template_name = 'monetization/sponsored/list.html'
+    context_object_name = 'sponsored_content'
+    
+    def get_queryset(self):
+        return SponsoredContent.objects.filter(
+            status='active',
+            campaign_start__lte=timezone.now(),
+            campaign_end__gte=timezone.now()
+        )
+
+
+# Freemium Features Views
+class TechStackProfileView(LoginRequiredMixin, UpdateView):
+    """User's tech stack profile"""
+    model = TechStackProfile
+    template_name = 'monetization/freemium/tech_stack.html'
+    fields = [
+        'company_name', 'industry', 'team_size',
+        'programming_languages', 'frameworks', 'cloud_providers',
+        'databases', 'current_tools', 'deployment_frequency',
+        'infrastructure_type', 'priorities'
+    ]
+    
+    def get_object(self):
+        profile, created = TechStackProfile.objects.get_or_create(
+            user=self.request.user
+        )
+        return profile
+
+
+class RecommendationsView(LoginRequiredMixin, ListView):
+    """User's custom recommendations"""
+    model = CustomRecommendation
+    template_name = 'monetization/freemium/recommendations.html'
+    context_object_name = 'recommendations'
+    
+    def get_queryset(self):
+        return CustomRecommendation.objects.filter(
+            user=self.request.user,
+            status='ready'
+        ).order_by('-created_at')
+
+
+class TeamListView(LoginRequiredMixin, ListView):
+    """User's teams"""
+    model = Team
+    template_name = 'monetization/freemium/teams.html'
+    context_object_name = 'teams'
+    
+    def get_queryset(self):
+        return Team.objects.filter(members=self.request.user)
+
+
+class TeamDetailView(LoginRequiredMixin, DetailView):
+    """Team detail and management"""
+    model = Team
+    template_name = 'monetization/freemium/team_detail.html'
+    context_object_name = 'team'
+
+
+class CostCalculatorView(LoginRequiredMixin, ListView):
+    """Cost calculator tool"""
+    model = CostCalculator
+    template_name = 'monetization/freemium/cost_calculator.html'
+    context_object_name = 'calculations'
+    
+    def get_queryset(self):
+        return CostCalculator.objects.filter(
+            user=self.request.user
+        ).order_by('-created_at')
+
+
+class IntegrationRoadmapView(LoginRequiredMixin, ListView):
+    """Integration roadmaps"""
+    model = IntegrationRoadmap
+    template_name = 'monetization/freemium/roadmap.html'
+    context_object_name = 'roadmaps'
+    
+    def get_queryset(self):
+        return IntegrationRoadmap.objects.filter(
+            user=self.request.user
+        ).order_by('-created_at')

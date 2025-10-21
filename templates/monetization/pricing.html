@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pricing - CloudEngineered{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <!-- Hero Section -->
+    <div class="text-center mb-16">
+        <h1 class="text-5xl font-bold mb-4">Choose Your Plan</h1>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            Unlock powerful DevOps insights and tools to accelerate your team's success
+        </p>
+    </div>
+
+    <!-- Pricing Toggle -->
+    <div class="flex justify-center mb-12">
+        <div class="bg-gray-200 rounded-full p-1 inline-flex">
+            <button id="monthly-btn" class="px-8 py-2 rounded-full font-semibold transition-all bg-white shadow-sm">
+                Monthly
+            </button>
+            <button id="yearly-btn" class="px-8 py-2 rounded-full font-semibold transition-all text-gray-600">
+                Yearly <span class="text-green-600 text-sm ml-1">(Save 17%)</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+        <!-- Free Tier -->
+        <div class="bg-white rounded-lg shadow-lg p-8 border-2 border-gray-200">
+            <h3 class="text-2xl font-bold mb-2">Free</h3>
+            <div class="mb-6">
+                <span class="text-4xl font-bold">$0</span>
+                <span class="text-gray-600">/month</span>
+            </div>
+            <p class="text-gray-600 mb-6">Perfect for exploring and comparing tools</p>
+            <ul class="space-y-3 mb-8">
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Basic tool comparisons</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Public tool ratings & reviews</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Community discussions</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-green-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Newsletter subscription</span>
+                </li>
+            </ul>
+            <a href="{% url 'users:register' %}" class="block w-full text-center bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition">
+                Get Started
+            </a>
+        </div>
+
+        <!-- Pro Tier -->
+        <div class="bg-white rounded-lg shadow-xl p-8 border-4 border-blue-500 relative transform scale-105">
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                Most Popular
+            </div>
+            <h3 class="text-2xl font-bold mb-2">Pro</h3>
+            <div class="mb-6">
+                <span class="text-4xl font-bold monthly-price">$29</span>
+                <span class="text-4xl font-bold yearly-price hidden">$24</span>
+                <span class="text-gray-600">/month</span>
+            </div>
+            <p class="text-gray-600 mb-6">For teams building with DevOps tools</p>
+            <ul class="space-y-3 mb-8">
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span><strong>Everything in Free, plus:</strong></span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>AI-powered tool recommendations</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Team collaboration (10 members)</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Integration roadmaps</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Advanced cost calculators</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Priority support (24hr response)</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>PDF/CSV exports</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>API access</span>
+                </li>
+            </ul>
+            <a href="{% url 'monetization:subscribe' %}?tier=pro&cycle=monthly" class="block w-full text-center bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition subscribe-btn" data-tier="pro">
+                Start Pro Trial
+            </a>
+        </div>
+
+        <!-- Enterprise Tier -->
+        <div class="bg-white rounded-lg shadow-lg p-8 border-2 border-gray-200">
+            <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
+            <div class="mb-6">
+                <span class="text-4xl font-bold monthly-price">$99</span>
+                <span class="text-4xl font-bold yearly-price hidden">$82</span>
+                <span class="text-gray-600">/month</span>
+            </div>
+            <p class="text-gray-600 mb-6">For organizations at scale</p>
+            <ul class="space-y-3 mb-8">
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-purple-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span><strong>Everything in Pro, plus:</strong></span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-purple-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Unlimited team members</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-purple-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>White-label reports</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-purple-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Dedicated account manager</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-purple-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Custom integrations (SSO, webhooks)</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-purple-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>99.9% SLA guarantee</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-purple-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Priority phone support</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-purple-500 mr-2 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>$500/year consulting credits</span>
+                </li>
+            </ul>
+            <a href="{% url 'monetization:subscribe' %}?tier=enterprise&cycle=monthly" class="block w-full text-center bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition subscribe-btn" data-tier="enterprise">
+                Contact Sales
+            </a>
+        </div>
+    </div>
+
+    <!-- Premium Reports Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-white mb-16">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-4">Premium Comparison Reports</h2>
+            <p class="text-xl mb-8 opacity-90">Get AI-generated detailed reports tailored to your needs</p>
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white/10 backdrop-blur rounded-lg p-6">
+                    <div class="text-3xl font-bold mb-2">$29</div>
+                    <div class="text-sm font-semibold mb-3">Basic Report</div>
+                    <ul class="text-sm space-y-2 text-left">
+                        <li>• 3 tools compared</li>
+                        <li>• 10-15 pages</li>
+                        <li>• Feature matrix</li>
+                    </ul>
+                </div>
+                <div class="bg-white/20 backdrop-blur rounded-lg p-6 border-2 border-white">
+                    <div class="text-3xl font-bold mb-2">$59</div>
+                    <div class="text-sm font-semibold mb-3">Standard Report</div>
+                    <ul class="text-sm space-y-2 text-left">
+                        <li>• 5 tools compared</li>
+                        <li>• 20-30 pages</li>
+                        <li>• Cost analysis</li>
+                        <li>• Integration guide</li>
+                    </ul>
+                </div>
+                <div class="bg-white/10 backdrop-blur rounded-lg p-6">
+                    <div class="text-3xl font-bold mb-2">$99</div>
+                    <div class="text-sm font-semibold mb-3">Premium Report</div>
+                    <ul class="text-sm space-y-2 text-left">
+                        <li>• Unlimited tools</li>
+                        <li>• 40+ pages</li>
+                        <li>• Custom recommendations</li>
+                        <li>• 30-min consultation</li>
+                    </ul>
+                </div>
+            </div>
+            <a href="{% url 'monetization:reports_list' %}" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                Browse Report Templates
+            </a>
+        </div>
+    </div>
+
+    <!-- Consulting Section -->
+    <div class="max-w-4xl mx-auto mb-16">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold mb-4">DevOps Consulting Services</h2>
+            <p class="text-xl text-gray-600">Expert guidance for your tool selection and DevOps transformation</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-2xl font-bold mb-2">Discovery Call</h3>
+                <div class="text-3xl font-bold text-blue-600 mb-4">$149</div>
+                <p class="text-gray-600 mb-4">30-minute call to understand your needs</p>
+                <ul class="space-y-2 text-sm mb-6">
+                    <li>• Initial assessment</li>
+                    <li>• Pain point identification</li>
+                    <li>• Tool recommendations</li>
+                </ul>
+                <a href="{% url 'monetization:consulting_list' %}" class="block text-center bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                    Book Now
+                </a>
+            </div>
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-2xl font-bold mb-2">Strategy Session</h3>
+                <div class="text-3xl font-bold text-blue-600 mb-4">$399</div>
+                <p class="text-gray-600 mb-4">1-hour deep dive into your challenges</p>
+                <ul class="space-y-2 text-sm mb-6">
+                    <li>• Detailed recommendations</li>
+                    <li>• Implementation timeline</li>
+                    <li>• Cost-benefit analysis</li>
+                </ul>
+                <a href="{% url 'monetization:consulting_list' %}" class="block text-center bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                    Book Now
+                </a>
+            </div>
+        </div>
+        <div class="text-center mt-8">
+            <a href="{% url 'monetization:consulting_list' %}" class="text-blue-600 hover:text-blue-700 font-semibold">
+                View All Consulting Packages →
+            </a>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="max-w-3xl mx-auto">
+        <h2 class="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-bold text-lg mb-2">Can I cancel anytime?</h3>
+                <p class="text-gray-600">Yes! You can cancel your subscription at any time. You'll continue to have access until the end of your billing period.</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-bold text-lg mb-2">What payment methods do you accept?</h3>
+                <p class="text-gray-600">We accept all major credit cards (Visa, MasterCard, American Express) and handle payments securely through Stripe.</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-bold text-lg mb-2">Do you offer refunds?</h3>
+                <p class="text-gray-600">We offer a 14-day money-back guarantee on all subscription plans. For reports and consulting services, refunds are available if you're not satisfied within 7 days.</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-bold text-lg mb-2">Can I upgrade or downgrade my plan?</h3>
+                <p class="text-gray-600">Absolutely! You can change your plan at any time. Upgrades take effect immediately, while downgrades take effect at the start of your next billing cycle.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const monthlyBtn = document.getElementById('monthly-btn');
+    const yearlyBtn = document.getElementById('yearly-btn');
+    const monthlyPrices = document.querySelectorAll('.monthly-price');
+    const yearlyPrices = document.querySelectorAll('.yearly-price');
+    const subscribeButtons = document.querySelectorAll('.subscribe-btn');
+
+    let isYearly = false;
+
+    function togglePricing() {
+        isYearly = !isYearly;
+        
+        if (isYearly) {
+            monthlyBtn.classList.remove('bg-white', 'shadow-sm');
+            monthlyBtn.classList.add('text-gray-600');
+            yearlyBtn.classList.add('bg-white', 'shadow-sm');
+            yearlyBtn.classList.remove('text-gray-600');
+            
+            monthlyPrices.forEach(el => el.classList.add('hidden'));
+            yearlyPrices.forEach(el => el.classList.remove('hidden'));
+            
+            subscribeButtons.forEach(btn => {
+                const href = btn.getAttribute('href');
+                btn.setAttribute('href', href.replace('cycle=monthly', 'cycle=yearly'));
+            });
+        } else {
+            yearlyBtn.classList.remove('bg-white', 'shadow-sm');
+            yearlyBtn.classList.add('text-gray-600');
+            monthlyBtn.classList.add('bg-white', 'shadow-sm');
+            monthlyBtn.classList.remove('text-gray-600');
+            
+            yearlyPrices.forEach(el => el.classList.add('hidden'));
+            monthlyPrices.forEach(el => el.classList.remove('hidden'));
+            
+            subscribeButtons.forEach(btn => {
+                const href = btn.getAttribute('href');
+                btn.setAttribute('href', href.replace('cycle=yearly', 'cycle=monthly'));
+            });
+        }
+    }
+
+    monthlyBtn.addEventListener('click', () => {
+        if (isYearly) togglePricing();
+    });
+
+    yearlyBtn.addEventListener('click', () => {
+        if (!isYearly) togglePricing();
+    });
+});
+</script>
+{% endblock %}

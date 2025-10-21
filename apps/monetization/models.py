@@ -7,6 +7,11 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from decimal import Decimal
 
+# Import new model modules
+from .premium_reports import ReportTemplate, PremiumReport, ReportPurchaseAnalytics
+from .consulting import ConsultingPackage, ConsultingBooking, ConsultingResource, ConsultantAvailability
+from .freemium import TechStackProfile, CustomRecommendation, Team, TeamMembership, IntegrationRoadmap, CostCalculator
+
 User = get_user_model()
 
 

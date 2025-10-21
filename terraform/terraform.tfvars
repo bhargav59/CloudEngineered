@@ -7,7 +7,7 @@ environment = "prod"
 
 # Network Configuration
 vpc_cidr = "10.0.0.0/16"
-allowed_ssh_cidr_blocks = ["20.192.21.54/32"]  # Your current IP for security
+allowed_ssh_cidr_blocks = ["23.97.62.120/32"]  # Your current IP for security
 
 # Database Configuration
 db_instance_class = "db.t3.micro"

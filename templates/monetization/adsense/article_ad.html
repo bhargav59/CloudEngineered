@@ -1,0 +1,19 @@
+{% load static %}
+
+{% if ADSENSE_ENABLED and ADSENSE_CLIENT_ID %}
+<!-- AdSense In-Article Ad -->
+<div class="my-8 max-w-4xl mx-auto">
+    <div class="text-xs text-gray-500 text-center mb-2">Advertisement</div>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ ADSENSE_CLIENT_ID }}"
+         crossorigin="anonymous"></script>
+    <ins class="adsbygoogle"
+         style="display:block; text-align:center;"
+         data-ad-layout="in-article"
+         data-ad-format="fluid"
+         data-ad-client="{{ ADSENSE_CLIENT_ID }}"
+         data-ad-slot="YYYYYYYYYY"></ins>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+</div>
+{% endif %}
