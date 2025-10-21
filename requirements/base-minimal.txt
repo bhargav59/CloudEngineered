@@ -81,6 +81,7 @@ drf-spectacular>=0.26.0
 
 # Content management
 markdown>=3.5.0
+markdown2>=2.4.0  # Used in templatetags
 bleach>=6.1.0
 
 # Rate limiting and throttling
