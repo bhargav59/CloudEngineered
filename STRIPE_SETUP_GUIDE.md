@@ -15,7 +15,7 @@
 2. Copy your keys:
    ```
    Publishable key: pk_test_XXXXXXXXXXXXXXXXXXXXXXXX
-   Secret key: sk_test_YOUR_SECRET_KEY_HERE_SECRET_KEY_HERE
+   Secret key: sk_test_YOUR_SECRET_KEY_HERE_SECRET_KEY_HERE_SECRET_KEY_HERE
    ```
 
 ### Step 3: Set Environment Variables
@@ -23,7 +23,7 @@
 ```bash
 # Add to your environment
 export STRIPE_PUBLIC_KEY="pk_test_XXXXXXXXXXXXXXXXXXXXXXXX"
-export STRIPE_SECRET_KEY="sk_test_YOUR_SECRET_KEY_HERE_SECRET_KEY_HERE"
+export STRIPE_SECRET_KEY="sk_test_YOUR_SECRET_KEY_HERE_SECRET_KEY_HERE_SECRET_KEY_HERE"
 export STRIPE_WEBHOOK_SECRET="whsec_XXXXXXXXXXXXXXXXXXXXXXXX"
 ```
 
