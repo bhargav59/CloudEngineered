@@ -42,6 +42,9 @@ RUN mkdir -p /app/staticfiles /app/media /app/logs
 # Make start script executable
 RUN chmod +x /app/start.sh
 
+# Collect static files during build
+RUN python manage.py collectstatic --noinput
+
 # Create non-root user and set permissions
 RUN adduser --disabled-password --gecos '' --uid 1000 cloudengineered \
     && chown -R cloudengineered:cloudengineered /app
