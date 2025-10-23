@@ -28,40 +28,61 @@ class HomeView(TemplateView):
     """
     template_name = 'core/home.html'
     
-    @method_decorator(cache_page(60 * 15))  # Cache for 15 minutes
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
+    # Temporarily disabled caching for debugging
+    # @method_decorator(cache_page(60 * 15))  # Cache for 15 minutes
+    # def dispatch(self, *args, **kwargs):
+    #     return super().dispatch(*args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Featured tools
-        context['featured_tools'] = Tool.objects.filter(
-            is_published=True,
-            is_featured=True
-        ).select_related('category').order_by('-created_at')[:6]
+        try:
+            # Featured tools
+            context['featured_tools'] = Tool.objects.filter(
+                is_published=True,
+                is_featured=True
+            ).select_related('category').order_by('-created_at')[:6]
+        except Exception as e:
+            context['featured_tools'] = []
+            print(f"Error loading featured tools: {e}")
         
-        # Latest articles
-        context['latest_articles'] = Article.objects.filter(
-            is_published=True
-        ).select_related('author').order_by('-published_at')[:4]
+        try:
+            # Latest articles
+            context['latest_articles'] = Article.objects.filter(
+                is_published=True
+            ).select_related('author').order_by('-published_at')[:4]
+        except Exception as e:
+            context['latest_articles'] = []
+            print(f"Error loading latest articles: {e}")
         
-        # Popular categories
-        context['popular_categories'] = Category.objects.annotate(
-            tools_count=Count('tools')
-        ).filter(tools_count__gt=0).order_by('-tools_count')[:6]
+        try:
+            # Popular categories
+            context['popular_categories'] = Category.objects.annotate(
+                tools_count=Count('tools')
+            ).filter(tools_count__gt=0).order_by('-tools_count')[:6]
+        except Exception as e:
+            context['popular_categories'] = []
+            print(f"Error loading popular categories: {e}")
         
-        # Featured categories (for homepage hero/sections) - also annotate with tool count
-        context['featured_categories'] = Category.objects.filter(
-            is_featured=True
-        ).annotate(tools_count=Count('tools')).order_by('sort_order')[:6]
+        try:
+            # Featured categories (for homepage hero/sections) - also annotate with tool count
+            context['featured_categories'] = Category.objects.filter(
+                is_featured=True
+            ).annotate(tools_count=Count('tools')).order_by('sort_order')[:6]
+        except Exception as e:
+            context['featured_categories'] = []
+            print(f"Error loading featured categories: {e}")
         
-        # Stats for homepage
-        context['stats'] = {
-            'total_tools': Tool.objects.filter(is_published=True).count(),
-            'total_articles': Article.objects.filter(is_published=True).count(),
-            'total_categories': Category.objects.filter(tools__is_published=True).distinct().count(),
-        }
+        try:
+            # Stats for homepage
+            context['stats'] = {
+                'total_tools': Tool.objects.filter(is_published=True).count(),
+                'total_articles': Article.objects.filter(is_published=True).count(),
+                'total_categories': Category.objects.filter(tools__is_published=True).distinct().count(),
+            }
+        except Exception as e:
+            context['stats'] = {'total_tools': 0, 'total_articles': 0, 'total_categories': 0}
+            print(f"Error loading stats: {e}")
         
         # Newsletter form
         context['newsletter_form'] = NewsletterSubscriptionForm()
