@@ -77,22 +77,29 @@ if REDIS_URL:
     CELERY_BROKER_URL = REDIS_URL
     CELERY_RESULT_BACKEND = REDIS_URL
 
-# Railway-specific allowed hosts
-RAILWAY_STATIC_URL = os.getenv('RAILWAY_STATIC_URL')
-RAILWAY_PUBLIC_DOMAIN = os.getenv('RAILWAY_PUBLIC_DOMAIN')
-
+# Allowed hosts configuration
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '0.0.0.0',
     '.railway.app',
     '.up.railway.app',
+    '.onrender.com',  # Render.com support
 ]
 
+# Railway-specific domain
+RAILWAY_PUBLIC_DOMAIN = os.getenv('RAILWAY_PUBLIC_DOMAIN')
 if RAILWAY_PUBLIC_DOMAIN:
     ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
 
-# Add your custom domain when you set it up
+# Render.com domain (auto-detected from RENDER environment variable)
+RENDER = os.getenv('RENDER')
+if RENDER:
+    RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+    if RENDER_EXTERNAL_HOSTNAME:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# Custom domain support
 CUSTOM_DOMAIN = os.getenv('CUSTOM_DOMAIN')
 if CUSTOM_DOMAIN:
     ALLOWED_HOSTS.extend([CUSTOM_DOMAIN, f'www.{CUSTOM_DOMAIN}'])
