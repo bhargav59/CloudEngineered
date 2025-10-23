@@ -87,7 +87,6 @@ ALLOWED_HOSTS = [
     '.onrender.com',  # Render.com support
 ]
 
-    '.onrender.com',  # Render.com support
 # Railway-specific domain
 RAILWAY_PUBLIC_DOMAIN = os.getenv('RAILWAY_PUBLIC_DOMAIN')
 if RAILWAY_PUBLIC_DOMAIN:
